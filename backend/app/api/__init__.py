@@ -1,5 +1,6 @@
 from flask import Blueprint
 
+from app.api.achievements import achievements_bp
 from app.api.auth import auth_bp
 from app.api.health import health_bp
 from app.api.leaderboard import leaderboard_bp
@@ -16,3 +17,4 @@ api_bp.register_blueprint(texts_bp)
 api_bp.register_blueprint(runs_bp)
 api_bp.register_blueprint(stats_bp)
 api_bp.register_blueprint(leaderboard_bp)
+api_bp.register_blueprint(achievements_bp)
