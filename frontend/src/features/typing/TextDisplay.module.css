@@ -1,0 +1,61 @@
+.display {
+  --line-height: 1.7em;
+  position: relative;
+  height: calc(var(--line-height) * var(--lines));
+  overflow: hidden;
+  padding: 0 var(--space-1);
+  font-family: var(--font-body);
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  line-height: var(--line-height);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  scroll-behavior: smooth;
+  user-select: none;
+}
+
+.code {
+  font-family: var(--font-mono);
+  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  tab-size: 4;
+}
+
+.correct {
+  color: var(--color-text);
+}
+
+.pending {
+  color: var(--color-text-muted);
+  opacity: 0.6;
+}
+
+.wordCurrent {
+  border-radius: var(--radius-sm);
+}
+
+.current {
+  border-radius: 3px;
+  color: var(--color-text);
+  opacity: 1;
+}
+
+.modeChars .current {
+  background: var(--color-cursor);
+  box-shadow: 0 3px 0 var(--color-accent-dark);
+}
+
+.modeWords .wordCurrent {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.modeWords .current {
+  text-decoration: underline 3px var(--color-primary);
+  text-underline-offset: 4px;
+}
+
+.modeChars .error,
+.modeWords .error {
+  background: var(--color-error);
+  box-shadow: none;
+  color: var(--color-surface);
+}
