@@ -84,4 +84,41 @@ frontend/
 
 ## Документация API
 
-Появится по мере реализации задач M1.
+Все ответы в JSON. Ошибки приходят в формате `{"error": "<код>", "message": "<текст>", "fields": {"<поле>": ["<текст>"]}}`, где `fields` есть только у `validation_error`.
+
+### Авторизация
+
+Access-токен живёт 30 минут и передаётся в заголовке `Authorization: Bearer <token>`. Refresh-токен живёт 30 дней и лежит в httpOnly cookie `kachow_refresh` с путём `/api/auth`: браузер отправляет его сам, нужен только `withCredentials: true`.
+
+| Метод | Путь | Тело | Ответ |
+|---|---|---|---|
+| POST | `/api/auth/register` | `{email, password, nickname}` | `201 {access_token, user}` + cookie |
+| POST | `/api/auth/login` | `{email, password}` | `200 {access_token, user}` + cookie |
+| POST | `/api/auth/refresh` | — (cookie) | `200 {access_token, user}` |
+| POST | `/api/auth/logout` | — | `200 {status: "ok"}`, cookie удаляется |
+| GET | `/api/auth/me` | — (Bearer) | `200 {user}` |
+
+Валидация: email приводится к нижнему регистру, пароль от 8 до 128 символов, ник от 3 до 32 символов (буквы, цифры, `_`, `-`).
+
+Коды ошибок: `validation_error` (400), `invalid_credentials` (401), `unauthorized` (401, нет токена), `invalid_token` (401), `token_expired` (401, пора делать refresh), `email_taken` (409), `nickname_taken` (409).
+
+Объект `user`:
+
+```json
+{
+  "id": 1,
+  "email": "mcqueen@rust-eze.com",
+  "nickname": "Молния_95",
+  "avatar_url": null,
+  "xp": 0,
+  "level": 1,
+  "streak_current": 0,
+  "streak_best": 0,
+  "car_config": {},
+  "has_password": true,
+  "providers": [],
+  "created_at": "2026-10-19T13:13:53.818952+00:00"
+}
+```
+
+В бэкенде защищённый эндпоинт помечается `@jwt_required()`, текущий пользователь доступен через `from flask_jwt_extended import current_user`. Для эндпоинтов, доступных и гостю, используется `@jwt_required(optional=True)`.
