@@ -7,7 +7,7 @@ from app.errors import ApiError
 from app.extensions import db
 from app.models import BigramStat, DailyChallenge, KeyStat, Run, Text, Track, UserTrack
 from app.services.achievements import check_achievements
-from app.services.leveling import add_xp, run_xp
+from app.services.leveling import add_xp, run_xp, xp_for_level
 from app.services.texts import check_access
 
 POINTS_PER_CHAR = 10
@@ -48,6 +48,10 @@ def save_run(user, data):
         "xp": progress.xp,
         "level": progress.level,
         "level_up": progress.level_up,
+        "levels_gained": progress.levels_gained,
+        "xp_to_next": progress.xp_to_next,
+        "level_xp": xp_for_level(progress.level),
+        "next_level_xp": xp_for_level(progress.level + 1),
         "new_achievements": new_achievements,
         "cups": cups,
     }

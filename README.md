@@ -17,8 +17,11 @@
 
 ```bash
 cp .env.example .env
-docker compose up --build
+docker compose up --build -d
+docker compose exec backend flask seed
 ```
+
+`flask seed` загружает словари, тексты, ачивки, трассы и гараж. Без него тренировка ответит «Не нашли подходящих текстов». Повторный запуск безопасен: данные обновляются, дубли не создаются.
 
 - Фронтенд: http://localhost:5173
 - API: http://localhost:5000/api/health (через фронтенд-прокси тоже: http://localhost:5173/api/health)

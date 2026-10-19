@@ -1,0 +1,126 @@
+.run {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.board {
+  position: relative;
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  border-top: 6px solid var(--color-primary);
+}
+
+.text {
+  transition: filter 0.2s ease;
+}
+
+.blurred {
+  filter: blur(6px);
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.count {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 5rem);
+  color: var(--color-primary);
+  text-shadow: 4px 4px 0 var(--color-accent);
+  animation: pop 0.6s ease-out;
+}
+
+.pause {
+  background: rgba(255, 248, 236, 0.92);
+}
+
+.pauseTitle {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+
+.pauseHint {
+  color: var(--color-text-muted);
+}
+
+.shake {
+  animation: shake 0.25s ease;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.footer kbd {
+  padding: 2px 6px;
+  border: 1px solid var(--color-text-muted);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+}
+
+.exit {
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+@keyframes pop {
+  from {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .count,
+  .shake {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .board {
+    padding: var(--space-4);
+  }
+}
