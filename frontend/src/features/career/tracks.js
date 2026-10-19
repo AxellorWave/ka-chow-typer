@@ -1,4 +1,4 @@
-import { MODES, langsForMode } from '../train/options.js'
+import { describeSetup } from '../train/options.js'
 
 export const CUPS = [
   { id: 1, label: 'Бронза', tone: 'bronze' },
@@ -42,8 +42,4 @@ export function trackSetup(track) {
   return { mode: track.mode, lang: track.lang, difficulty: track.difficulty, trackId: track.id }
 }
 
-export function trackMeta(track) {
-  const mode = MODES.find((item) => item.id === track.mode)?.label ?? track.mode
-  const lang = langsForMode(track.mode).find((item) => item.id === track.lang)?.label ?? track.lang
-  return `${mode} · ${lang} · сложность ${track.difficulty}`
-}
+export const trackMeta = describeSetup

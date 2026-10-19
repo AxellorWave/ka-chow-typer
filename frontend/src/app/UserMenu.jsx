@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { logout } from '../api/auth.js'
+import StreakFlame from '../features/daily/StreakFlame.jsx'
 import { useAuthStore } from '../store/authStore.js'
 import styles from './UserMenu.module.css'
 
@@ -40,6 +41,9 @@ export default function UserMenu() {
           <span className={styles.nickname}>{user.nickname}</span>
           <span className={styles.level}>Ур. {user.level}</span>
         </span>
+      </Link>
+      <Link to="/daily" className={styles.streak} aria-label={`Стрик: ${user.streak_current ?? 0}`}>
+        <StreakFlame count={user.streak_current ?? 0} />
       </Link>
       <button type="button" className={styles.logout} onClick={handleLogout}>
         Выйти

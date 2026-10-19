@@ -41,6 +41,18 @@
   color: var(--color-text-muted);
 }
 
+.streak {
+  display: inline-flex;
+  padding: var(--space-1) var(--space-2);
+  border-radius: 999px;
+  background: var(--color-bg);
+  text-decoration: none;
+}
+
+.streak:hover {
+  background: var(--color-gold);
+}
+
 .login,
 .logout {
   padding: var(--space-2) var(--space-4);

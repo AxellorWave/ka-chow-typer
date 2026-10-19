@@ -52,3 +52,9 @@ export function normalizeSetup(setup, user) {
     DIFFICULTIES[0]
   return { mode: mode.id, lang: lang.id, difficulty: difficulty.id }
 }
+
+export function describeSetup({ mode, lang, difficulty }) {
+  const modeLabel = MODES.find((item) => item.id === mode)?.label ?? mode
+  const langLabel = langsForMode(mode).find((item) => item.id === lang)?.label ?? lang
+  return `${modeLabel} · ${langLabel} · сложность ${difficulty}`
+}

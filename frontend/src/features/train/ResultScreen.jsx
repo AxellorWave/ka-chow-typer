@@ -92,6 +92,7 @@ export default function ResultScreen({
   onAgain,
   onChangeSetup,
   changeLabel = 'Сменить режим',
+  againLabel = 'Ещё заезд',
 }) {
   const save = useSaveRun(payload, Boolean(user))
 
@@ -138,14 +139,14 @@ export default function ResultScreen({
       {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
 
       <div className={styles.actions}>
-        <Button onClick={onAgain}>Ещё заезд</Button>
+        <Button onClick={onAgain}>{againLabel}</Button>
         <Button variant="accent" disabled title="Появится вместе с пит-стопом">
           Пит-стоп · скоро
         </Button>
         <button type="button" className={styles.link} onClick={onChangeSetup}>
           {changeLabel}
         </button>
-        <span className={styles.hint}>Enter — ещё заезд</span>
+        <span className={styles.hint}>Enter — {againLabel.toLowerCase()}</span>
       </div>
     </section>
   )

@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { createScoreTracker } from '../game/scoring.js'
-import {
-  BONUS_DURATION_MS,
-  TURBO_BONUS,
-  getRandomBonusDelay,
-} from '../game/bonuses.js'
+import { BONUS_DURATION_MS, TURBO_BONUS, getRandomBonusDelay } from '../game/bonuses.js'
 import { useSettingsStore } from '../../store/settingsStore.js'
 import TextDisplay from '../typing/TextDisplay.jsx'
 import { useTypingEngine } from '../typing/useTypingEngine.js'
@@ -87,6 +83,7 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
         difficulty: run.difficulty,
         text_id: run.text_id ?? null,
         track_id: run.track_id ?? null,
+        daily_date: run.daily_date ?? null,
         score,
         max_combo: maxCombo,
       }
@@ -146,7 +143,7 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
     setBonusSeconds(0)
     setBonusDelay(getRandomBonusDelay())
     setPhase('countdown')
-   setRound((value) => value + 1)
+    setRound((value) => value + 1)
   }, [engine, tracker])
 
   useEffect(() => {
