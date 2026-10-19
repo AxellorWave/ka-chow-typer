@@ -1,7 +1,7 @@
 from flask import Blueprint, abort, current_app, request
 
 from app.models.enums import OAuthProvider
-from app.services import oauth_yandex
+from app.services import oauth_vk, oauth_yandex
 from app.services.oauth import (
     OAuthError,
     consume_state,
@@ -13,6 +13,7 @@ from app.services.oauth import (
 oauth_bp = Blueprint("oauth", __name__, url_prefix="/auth")
 
 PROVIDERS = {
+    OAuthProvider.VK.value: oauth_vk,
     OAuthProvider.YANDEX.value: oauth_yandex,
 }
 
