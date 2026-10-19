@@ -86,7 +86,13 @@ function SaveStatus({ save }) {
   )
 }
 
-export default function ResultScreen({ payload, user, onAgain, onChangeSetup }) {
+export default function ResultScreen({
+  payload,
+  user,
+  onAgain,
+  onChangeSetup,
+  changeLabel = 'Сменить режим',
+}) {
   const save = useSaveRun(payload, Boolean(user))
 
   useEffect(() => {
@@ -137,7 +143,7 @@ export default function ResultScreen({ payload, user, onAgain, onChangeSetup }) 
           Пит-стоп · скоро
         </Button>
         <button type="button" className={styles.link} onClick={onChangeSetup}>
-          Сменить режим
+          {changeLabel}
         </button>
         <span className={styles.hint}>Enter — ещё заезд</span>
       </div>

@@ -20,6 +20,7 @@ export function useSaveRun(payload, enabled) {
       queryClient.invalidateQueries({ queryKey: ['stats'] })
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
       queryClient.invalidateQueries({ queryKey: ['achievements'] })
+      queryClient.invalidateQueries({ queryKey: ['tracks'] })
       try {
         const user = await getMe()
         useAuthStore.setState({ user })
