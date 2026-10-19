@@ -1,15 +1,8 @@
+import { carColor } from './carColors.js'
 import styles from './CarBadge.module.css'
 
-const CAR_COLORS = {
-  color_red: 'var(--car-red)',
-  color_yellow: 'var(--car-yellow)',
-  color_blue: 'var(--car-blue)',
-  color_rust: 'var(--car-rust)',
-  color_black: 'var(--car-black)',
-}
-
 export default function CarBadge({ config, width = 48 }) {
-  const color = CAR_COLORS[config?.color] ?? CAR_COLORS.color_red
+  const color = carColor(config)
 
   return (
     <svg

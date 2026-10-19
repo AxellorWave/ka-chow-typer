@@ -4,11 +4,13 @@ import { createScoreTracker } from '../game/scoring.js'
 import TextDisplay from '../typing/TextDisplay.jsx'
 import { useTypingEngine } from '../typing/useTypingEngine.js'
 import Hud from './Hud.jsx'
+import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
 
 const COUNTDOWN_FROM = 3
 const COUNTDOWN_STEP_MS = 700
 const GO_LABEL = 'Ka-chow!'
+const FINISH_DELAY_MS = 900
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -42,10 +44,12 @@ export default function RunScreen({ run, onFinish, onExit }) {
   const tracker = useMemo(() => createScoreTracker(), [])
   const errorFlashRef = useRef(null)
 
+  const finishTimerRef = useRef(null)
+
   const finish = useCallback(
     (result) => {
       const { score, maxCombo } = tracker.store.getState()
-      onFinish({
+      const payload = {
         ...result,
         mode: run.mode,
         lang: run.lang,
@@ -53,10 +57,14 @@ export default function RunScreen({ run, onFinish, onExit }) {
         text_id: run.text_id ?? null,
         score,
         max_combo: maxCombo,
-      })
+      }
+      setPhase('finished')
+      finishTimerRef.current = setTimeout(() => onFinish(payload), FINISH_DELAY_MS)
     },
     [onFinish, run, tracker],
   )
+
+  useEffect(() => () => clearTimeout(finishTimerRef.current), [])
 
   const engine = useTypingEngine(run.text, {
     enabled: phase === 'running',
@@ -101,6 +109,7 @@ export default function RunScreen({ run, onFinish, onExit }) {
       if (event.key === 'Escape') {
         event.preventDefault()
         event.stopPropagation()
+        if (engine.store.getState().finishedAt !== null) return
         if (engine.store.getState().pausedAt !== null) engine.resume(event.timeStamp)
         restart()
         return
@@ -120,6 +129,8 @@ export default function RunScreen({ run, onFinish, onExit }) {
   return (
     <section className={styles.run} aria-label="Заезд">
       <Hud engine={engine} tracker={tracker} />
+
+      <TrainTrack engine={engine} tracker={tracker} finished={phase === 'finished'} />
 
       <div ref={errorFlashRef} className={styles.board}>
         <div className={phase === 'countdown' ? `${styles.text} ${styles.blurred}` : styles.text}>
