@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { createScoreTracker } from '../game/scoring.js'
+import {
+  BONUS_DURATION_MS,
+  TURBO_BONUS,
+  getRandomBonusDelay,
+} from '../game/bonuses.js'
+import { useSettingsStore } from '../../store/settingsStore.js'
 import TextDisplay from '../typing/TextDisplay.jsx'
 import { useTypingEngine } from '../typing/useTypingEngine.js'
 import Hud from './Hud.jsx'
@@ -11,6 +17,28 @@ const COUNTDOWN_FROM = 3
 const COUNTDOWN_STEP_MS = 700
 const GO_LABEL = 'Ka-chow!'
 const FINISH_DELAY_MS = 900
+
+function playErrorSound() {
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextClass) return
+
+  const context = new AudioContextClass()
+  const oscillator = context.createOscillator()
+  const gain = context.createGain()
+
+  oscillator.type = 'square'
+  oscillator.frequency.value = 180
+
+  gain.gain.setValueAtTime(0.08, context.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12)
+
+  oscillator.connect(gain)
+  gain.connect(context.destination)
+
+  oscillator.start()
+  oscillator.stop(context.currentTime + 0.12)
+  oscillator.onended = () => context.close()
+}
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -43,6 +71,9 @@ export default function RunScreen({ run, onFinish, onExit }) {
   const [round, setRound] = useState(0)
   const tracker = useMemo(() => createScoreTracker(), [])
   const errorFlashRef = useRef(null)
+  const [bonusSeconds, setBonusSeconds] = useState(0)
+  const [, setBonusDelay] = useState(getRandomBonusDelay)
+  const bonusActive = bonusSeconds > 0
 
   const finishTimerRef = useRef(null)
 
@@ -68,9 +99,14 @@ export default function RunScreen({ run, onFinish, onExit }) {
 
   const engine = useTypingEngine(run.text, {
     enabled: phase === 'running',
-    onCorrect: (outcome) => tracker.hit(outcome.count),
+    onCorrect: (outcome) => {
+      tracker.hit(outcome.count, bonusActive ? TURBO_BONUS.multiplier : 1)
+    },
     onError: () => {
       tracker.miss()
+      if (useSettingsStore.getState().soundEnabled) {
+        playErrorSound()
+      }
       const node = errorFlashRef.current
       if (node) {
         node.classList.remove(styles.shake)
@@ -82,13 +118,34 @@ export default function RunScreen({ run, onFinish, onExit }) {
   })
 
   const paused = useStore(engine.store, (state) => state.pausedAt !== null)
+  useEffect(() => {
+    if (phase !== 'running' || paused) return undefined
+
+    const timer = setInterval(() => {
+      if (bonusSeconds > 0) {
+        setBonusSeconds((seconds) => Math.max(0, seconds - 1))
+      } else {
+        setBonusDelay((delay) => {
+          if (delay <= 1000) {
+            setBonusSeconds(BONUS_DURATION_MS / 1000)
+            return getRandomBonusDelay()
+          }
+          return delay - 1000
+        })
+      }
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [phase, paused, bonusSeconds])
   const count = useCountdown(phase === 'countdown', round, () => setPhase('running'))
 
   const restart = useCallback(() => {
     engine.reset()
     tracker.reset()
+    setBonusSeconds(0)
+    setBonusDelay(getRandomBonusDelay())
     setPhase('countdown')
-    setRound((value) => value + 1)
+   setRound((value) => value + 1)
   }, [engine, tracker])
 
   useEffect(() => {
@@ -129,6 +186,13 @@ export default function RunScreen({ run, onFinish, onExit }) {
   return (
     <section className={styles.run} aria-label="Заезд">
       <Hud engine={engine} tracker={tracker} />
+      {bonusActive && (
+        <div className={styles.bonus} role="status">
+          {TURBO_BONUS.icon} {TURBO_BONUS.label} ×{TURBO_BONUS.multiplier}
+          {' — '}
+          {bonusSeconds} сек.
+        </div>
+      )}
 
       <TrainTrack engine={engine} tracker={tracker} finished={phase === 'finished'} />
 

@@ -124,3 +124,12 @@
     padding: var(--space-4);
   }
 }
+
+.bonus {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  color: white;
+  font-weight: 700;
+  text-align: center;
+}
