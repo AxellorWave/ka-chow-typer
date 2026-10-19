@@ -1,0 +1,243 @@
+.node {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  justify-content: center;
+  min-width: 0;
+}
+
+.marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 200px;
+  padding: 0 var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text);
+  text-align: center;
+}
+
+.marker:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.badge {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 4px solid var(--track-edge);
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  transition: transform 0.15s ease;
+}
+
+.name {
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.cups {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.cup {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  filter: grayscale(1);
+  opacity: 0.3;
+}
+
+.bronze,
+.silver,
+.gold {
+  filter: none;
+  opacity: 1;
+}
+
+.bronze {
+  background: var(--color-bronze);
+}
+
+.silver {
+  background: var(--color-silver);
+}
+
+.gold {
+  background: var(--color-gold);
+}
+
+.best,
+.lock {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.lock {
+  font-weight: 600;
+}
+
+.open .badge {
+  border-color: var(--color-accent);
+  background: var(--color-primary);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.done .badge {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-text);
+}
+
+.open .marker:hover .badge,
+.done .marker:hover .badge {
+  transform: scale(1.08);
+}
+
+.locked .marker {
+  cursor: not-allowed;
+}
+
+.locked .badge {
+  background: var(--track-edge);
+}
+
+.locked .name {
+  color: var(--color-text-muted);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% - var(--space-2));
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 240px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow:
+    var(--shadow-card),
+    0 0 0 2px var(--color-accent-dark);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 8px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s;
+  pointer-events: none;
+}
+
+.node:hover .tooltip,
+.node:focus-within .tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.node:first-child .tooltip {
+  left: 0;
+  transform: translate(0, 8px);
+}
+
+.node:last-child .tooltip {
+  right: 0;
+  left: auto;
+  transform: translate(0, 8px);
+}
+
+.node:first-child:hover .tooltip,
+.node:first-child:focus-within .tooltip,
+.node:last-child:hover .tooltip,
+.node:last-child:focus-within .tooltip {
+  transform: translate(0, 0);
+}
+
+.description,
+.meta {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.meta {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+@keyframes pulse {
+  50% {
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 8px var(--color-accent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open .badge {
+    animation: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .node {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .marker {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+    align-items: center;
+    max-width: none;
+    padding: 0;
+    text-align: left;
+  }
+
+  .badge {
+    grid-row: 1 / 4;
+  }
+
+  .tooltip {
+    position: static;
+    width: auto;
+    margin-left: calc(64px + var(--space-3));
+    padding: var(--space-2);
+    box-shadow: none;
+    background: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .node .tooltip,
+  .node:hover .tooltip,
+  .node:focus-within .tooltip {
+    transform: none;
+  }
+
+  .description {
+    display: none;
+  }
+}
