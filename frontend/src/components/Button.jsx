@@ -11,7 +11,12 @@ export default function Button({
   const classNames = [styles.button, styles[variant], className].filter(Boolean).join(' ')
 
   return (
-    <button className={classNames} disabled={disabled || loading} aria-busy={loading} {...buttonProps}>
+    <button
+      className={classNames}
+      disabled={disabled || loading}
+      aria-busy={loading}
+      {...buttonProps}
+    >
       {loading && <span className={styles.spinner} aria-hidden="true" />}
       {children}
     </button>
