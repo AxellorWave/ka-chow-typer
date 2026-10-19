@@ -8,33 +8,20 @@ import { useTypingEngine } from '../typing/useTypingEngine.js'
 import Hud from './Hud.jsx'
 import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
+import {
+  playTireSound,
+  playNitroSound,
+  startEngineSound,
+  updateEngineSound,
+  stopEngineSound,
+  closeAudioContext,
+} from '../audio/audioEngine.js'
 
 const COUNTDOWN_FROM = 3
 const COUNTDOWN_STEP_MS = 700
 const GO_LABEL = 'Ka-chow!'
 const FINISH_DELAY_MS = 900
 
-function playErrorSound() {
-  const AudioContextClass = window.AudioContext || window.webkitAudioContext
-  if (!AudioContextClass) return
-
-  const context = new AudioContextClass()
-  const oscillator = context.createOscillator()
-  const gain = context.createGain()
-
-  oscillator.type = 'square'
-  oscillator.frequency.value = 180
-
-  gain.gain.setValueAtTime(0.08, context.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.12)
-
-  oscillator.connect(gain)
-  gain.connect(context.destination)
-
-  oscillator.start()
-  oscillator.stop(context.currentTime + 0.12)
-  oscillator.onended = () => context.close()
-}
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -98,12 +85,24 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
   const engine = useTypingEngine(run.text, {
     enabled: phase === 'running',
     onCorrect: (outcome) => {
+      const previousCombo = tracker.store.getState().combo
+
       tracker.hit(outcome.count, bonusActive ? TURBO_BONUS.multiplier : 1)
+
+      const currentCombo = tracker.store.getState().combo
+
+      if (useSettingsStore.getState().soundEnabled) {
+        startEngineSound()
+
+        if (previousCombo < 100 && currentCombo >= 100) {
+          playNitroSound()
+        }
+      }
     },
     onError: () => {
       tracker.miss()
       if (useSettingsStore.getState().soundEnabled) {
-        playErrorSound()
+        playTireSound()
       }
       const node = errorFlashRef.current
       if (node) {
@@ -116,6 +115,32 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
   })
 
   const paused = useStore(engine.store, (state) => state.pausedAt !== null)
+  const soundEnabled = useSettingsStore((state) => state.soundEnabled)
+  useEffect(() => {
+    return () => {
+      void closeAudioContext()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (phase !== 'running' || paused || !soundEnabled) {
+      stopEngineSound()
+      return undefined
+    }
+
+    return () => stopEngineSound()
+  }, [phase, paused, soundEnabled])
+
+  useEffect(() => {
+    if (phase !== 'running' || paused || !soundEnabled) return undefined
+
+    const timer = setInterval(() => {
+      const wpm = engine.getMetrics(performance.now()).wpm
+      updateEngineSound(wpm)
+    }, 250)
+
+    return () => clearInterval(timer)
+  }, [engine, phase, paused, soundEnabled])
   useEffect(() => {
     if (phase !== 'running' || paused) return undefined
 

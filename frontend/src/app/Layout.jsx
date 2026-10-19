@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigation } from 'react-router-dom'
 import ToastHost from '../features/effects/ToastHost.jsx'
+import { useSettingsStore } from '../store/settingsStore.js'
 import UserMenu from './UserMenu.jsx'
 import styles from './Layout.module.css'
 
@@ -19,6 +20,8 @@ const navLinkClassName = ({ isActive }) =>
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const isNavigating = useNavigation().state !== 'idle'
+  const soundEnabled = useSettingsStore((state) => state.soundEnabled)
+  const toggleSound = useSettingsStore((state) => state.toggleSound)
 
   useEffect(() => {
     if (!menuOpen) {
@@ -67,7 +70,23 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          <UserMenu />
+          <div className={styles.headerActions}>
+            <button
+              type="button"
+              className={styles.soundButton}
+              onClick={(event) => {
+                event.stopPropagation()
+                toggleSound()
+              }}
+              aria-label={soundEnabled ? 'Выключить звук' : 'Включить звук'}
+              aria-pressed={soundEnabled}
+              title={soundEnabled ? 'Выключить звук' : 'Включить звук'}
+            >
+              <span aria-hidden="true">{soundEnabled ? '🔊' : '🔇'}</span>
+              <span>{soundEnabled ? 'Звук включён' : 'Без звука'}</span>
+            </button>
+            <UserMenu />
+          </div>
         </div>
       </header>
       <main className={styles.main}>

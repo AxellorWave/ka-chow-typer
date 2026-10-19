@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 export const useSettingsStore = create(
   persist(
     (set) => ({
-      soundEnabled: true,
+      soundEnabled: typeof window === 'undefined' || !window.matchMedia('(max-width: 768px)').matches,
       displayMode: 'chars',
       language: 'ru',
       showKeyboard: true,
