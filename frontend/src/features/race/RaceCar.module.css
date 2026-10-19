@@ -24,7 +24,7 @@
 
 .number {
   font-family: var(--font-display);
-  font-size: 7px;
+  font-size: 6px;
   fill: var(--color-surface);
   text-anchor: middle;
 }
