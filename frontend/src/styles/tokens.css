@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+  --color-primary: #d0021b;
+  --color-primary-dark: #9b0014;
+  --color-accent: #ffd500;
+  --color-accent-dark: #e0a800;
+  --color-bg: #fff8ec;
+  --color-surface: #ffffff;
+  --color-text: #1a1a1a;
+  --color-text-muted: #5b5b5b;
+  --color-success: #1fa34a;
+  --color-error: #e53935;
+  --color-cursor: #ffd500;
+
+  --font-display: 'Bungee', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 0 4px 0 rgba(0, 0, 0, 0.15);
+  --content-width: 1200px;
+}
