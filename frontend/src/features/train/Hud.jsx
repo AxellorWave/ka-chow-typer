@@ -9,6 +9,7 @@ export default function Hud({ engine, tracker }) {
   const score = useStore(tracker.store, (state) => state.score)
   const combo = useStore(tracker.store, (state) => state.combo)
   const multiplier = comboMultiplier(combo)
+  const nitro = Math.min(combo, 100)
 
   const items = [
     { label: 'WPM', value: metrics.wpm.toFixed(0), accent: true },
@@ -35,6 +36,22 @@ export default function Hud({ engine, tracker }) {
       <div className={`${styles.item} ${styles.combo}`} data-tier={multiplier}>
         <span className={styles.value}>×{multiplier}</span>
         <span className={styles.label}>Комбо {combo}</span>
+      </div>
+      <div className={styles.nitro}>
+        <div className={styles.nitroHeader}>
+          <span>⚡ НИТРО</span>
+          <span>{nitro}%</span>
+        </div>
+        <div
+          className={styles.nitroTrack}
+          role="progressbar"
+          aria-label="Заряд нитро"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={nitro}
+        >
+          <div className={styles.nitroFill} style={{ width: `${nitro}%` }} />
+        </div>
       </div>
     </div>
   )
