@@ -1,0 +1,101 @@
+.keyboard {
+  --key-unit: clamp(32px, 4.6vw, 52px);
+  --key-gap: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--key-gap);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  gap: var(--key-gap);
+}
+
+.key {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--key-unit) * var(--key-width) + var(--key-gap) * (var(--key-width) - 1));
+  height: var(--key-unit);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-key);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: calc(var(--key-unit) * 0.3);
+  transition:
+    transform 80ms ease-out,
+    box-shadow 80ms ease-out;
+}
+
+.pinky {
+  background: var(--finger-pinky);
+}
+
+.ring {
+  background: var(--finger-ring);
+}
+
+.middle {
+  background: var(--finger-middle);
+}
+
+.index {
+  background: var(--finger-index);
+}
+
+.thumb {
+  background: var(--finger-thumb);
+}
+
+.hint {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  font-size: 0.75em;
+  color: var(--color-text-muted);
+}
+
+.caption {
+  font-weight: 700;
+}
+
+.target {
+  background: var(--color-accent);
+  box-shadow:
+    0 0 0 3px var(--color-primary),
+    var(--shadow-key);
+  transform: translateY(-2px);
+  z-index: 1;
+}
+
+.flashOk {
+  animation: flashOk 220ms ease-out;
+}
+
+.flashError {
+  animation: flashError 320ms ease-out;
+}
+
+@keyframes flashOk {
+  from {
+    background: var(--color-success);
+    color: var(--color-surface);
+    transform: translateY(2px);
+  }
+}
+
+@keyframes flashError {
+  0%,
+  60% {
+    background: var(--color-error);
+    color: var(--color-surface);
+    transform: translateY(2px);
+  }
+}
