@@ -13,6 +13,7 @@ function Lane({ car }) {
           style={{ '--progress': clamp(car.progress) }}
           data-speed={car.speed ?? 'idle'}
           data-finished={car.finished || undefined}
+          data-car={car.id}
         >
           <div
             key={car.skid ?? 0}

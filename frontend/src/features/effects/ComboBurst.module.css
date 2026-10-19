@@ -1,0 +1,61 @@
+.burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  font-family: var(--font-display);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: burst 1.1s ease-out forwards;
+}
+
+.fire {
+  font-size: clamp(1.25rem, 4vw, 2rem);
+  color: var(--flame-outer);
+  text-shadow: 2px 2px 0 var(--flame-core);
+}
+
+.kachow {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  color: var(--color-accent);
+  text-shadow:
+    4px 4px 0 var(--color-primary),
+    -2px -2px 0 var(--color-primary-dark);
+}
+
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4) rotate(-8deg);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15) rotate(-4deg);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -60%) scale(1) rotate(-4deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -80%) scale(0.95) rotate(-4deg);
+  }
+}
+
+@keyframes fade {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20%,
+  70% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst {
+    transform: translate(-50%, -50%);
+    animation-name: fade;
+  }
+}

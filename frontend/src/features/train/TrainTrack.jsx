@@ -1,8 +1,11 @@
 import { useStore } from 'zustand'
 import { useAuthStore } from '../../store/authStore.js'
 import { comboMultiplier } from '../game/scoring.js'
+import ComboBurst from '../effects/ComboBurst.jsx'
+import SparkCanvas from '../effects/SparkCanvas.jsx'
 import RaceTrack from '../race/RaceTrack.jsx'
 import { useTypingMetrics } from '../typing/useTypingMetrics.js'
+import styles from './TrainTrack.module.css'
 
 const SPEED_TIERS = [
   { below: 35, speed: 'cruise' },
@@ -37,5 +40,11 @@ export default function TrainTrack({ engine, tracker, finished }) {
     },
   ]
 
-  return <RaceTrack cars={cars} moving={moving} finished={finished} />
+  return (
+    <div className={styles.wrapper}>
+      <RaceTrack cars={cars} moving={moving} finished={finished} />
+      <SparkCanvas tracker={tracker} anchorSelector='[data-car="player"] svg' />
+      <ComboBurst tracker={tracker} />
+    </div>
+  )
 }

@@ -61,6 +61,17 @@
   animation: shake 0.25s ease;
 }
 
+.shake::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--color-error);
+  opacity: 0;
+  pointer-events: none;
+  animation: flash 0.3s ease-out;
+}
+
 .footer {
   display: flex;
   flex-wrap: wrap;
@@ -96,6 +107,15 @@
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes flash {
+  from {
+    opacity: 0.22;
+  }
+  to {
+    opacity: 0;
   }
 }
 
