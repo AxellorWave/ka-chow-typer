@@ -14,6 +14,21 @@
   --color-cursor: #ffd500;
   --color-vk: #0077ff;
   --color-yandex: #fc3f1d;
+  --color-gold: #fff1b8;
+  --color-silver: #eef1f5;
+  --color-bronze: #f8e1cc;
+
+  --car-red: #d7262b;
+  --car-yellow: #f6c304;
+  --car-blue: #5ba4d9;
+  --car-rust: #8b4a2b;
+  --car-black: #1c1f26;
+
+  --finger-pinky: #f9c0d2;
+  --finger-ring: #ffd9a3;
+  --finger-middle: #c4e8b3;
+  --finger-index: #b5daf7;
+  --finger-thumb: #dccdf2;
 
   --font-display: 'Bungee', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
@@ -32,5 +47,6 @@
   --radius-lg: 20px;
 
   --shadow-card: 0 4px 0 rgba(0, 0, 0, 0.15);
+  --shadow-key: 0 2px 0 rgba(0, 0, 0, 0.18);
   --content-width: 1200px;
 }

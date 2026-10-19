@@ -1,0 +1,95 @@
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--color-bg);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.number {
+  text-align: right;
+}
+
+.table th.number,
+.table td.number {
+  text-align: right;
+}
+
+.wpm {
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.more {
+  align-self: center;
+}
+
+@media (max-width: 640px) {
+  .table thead {
+    display: none;
+  }
+
+  .table tbody {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .table tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-bg);
+  }
+
+  .table td {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border: none;
+    white-space: normal;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+
+  .table td:nth-child(1),
+  .table td:nth-child(2) {
+    grid-column: span 3;
+    flex-direction: row;
+    gap: var(--space-2);
+    font-weight: 600;
+  }
+
+  .table td:nth-child(1)::before,
+  .table td:nth-child(2)::before {
+    content: none;
+  }
+
+  .table th.number,
+  .table td.number {
+    text-align: left;
+  }
+}

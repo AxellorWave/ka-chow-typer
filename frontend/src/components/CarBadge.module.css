@@ -1,0 +1,21 @@
+.car {
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.window {
+  fill: var(--color-surface);
+  opacity: 0.85;
+}
+
+.bolt {
+  fill: var(--color-accent);
+}
+
+.wheel {
+  fill: var(--color-text);
+}
+
+.hub {
+  fill: var(--color-text-muted);
+}
