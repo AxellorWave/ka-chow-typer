@@ -6,22 +6,27 @@ const textErrorMessage = (error) =>
   error.response?.data?.message ??
   'Не удалось загрузить текст. Проверьте связь и попробуйте ещё раз.'
 
-export function useRunFlow(setup) {
+export function useRunFlow(setup, loadText = getText) {
   const [phase, setPhase] = useState('setup')
   const [run, setRun] = useState(null)
   const [result, setResult] = useState(null)
 
   const textMutation = useMutation({
-    mutationFn: getText,
+    mutationFn: loadText,
     onSuccess: (data, variables) => {
-      setRun({ ...data, track_id: variables.trackId ?? null, key: Date.now() })
+      setRun({
+        ...data,
+        track_id: variables.trackId ?? null,
+        daily_date: variables.dailyDate ?? null,
+        key: Date.now(),
+      })
       setResult(null)
       setPhase('run')
     },
   })
 
-  const { mutate: loadText, isPending } = textMutation
-  const start = useCallback(() => loadText(setup), [loadText, setup])
+  const { mutate, isPending } = textMutation
+  const start = useCallback(() => mutate(setup), [mutate, setup])
 
   const finish = useCallback((payload) => {
     setResult(payload)
