@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Press+Start+2P&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+  --color-primary: #d42a1c;
+  --color-primary-dark: #8f160c;
+  --color-accent: #ffb81c;
+  --color-accent-dark: #e07a00;
+  --color-bg: #efe4cf;
+  --color-surface: #fbf5e8;
+  --color-surface-2: #e6d8bc;
+  --color-border: #1a120e;
+  --color-text: #1a120e;
+  --color-text-muted: #5a4a3e;
+  --color-success: #1d6b3a;
+  --color-error: #c8102e;
+  --color-error-bg: #ffd3d9;
+  --color-cursor: #e07a00;
+  --color-sky: #2a8c9c;
+  --color-sand: #d9b98a;
+  --color-chrome: #b9c0ca;
+  --color-horizon: #8fcbd2;
+  --color-asphalt: #3a3330;
+
+  --finger-left-pinky: oklch(0.86 0.09 15);
+  --finger-left-ring: oklch(0.86 0.09 60);
+  --finger-left-middle: oklch(0.88 0.09 100);
+  --finger-left-index: oklch(0.86 0.09 145);
+  --finger-right-index: oklch(0.86 0.09 195);
+  --finger-right-middle: oklch(0.86 0.09 245);
+  --finger-right-ring: oklch(0.86 0.09 290);
+  --finger-right-pinky: oklch(0.86 0.09 340);
+  --finger-thumb: oklch(0.88 0.01 70);
+
+  --font-display: 'Dela Gothic One', system-ui, sans-serif;
+  --font-body: 'Onest', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-arcade: 'Press Start 2P', ui-monospace, monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 4px 4px 0 #1a120e;
+  --texture: radial-gradient(rgba(26, 18, 14, 0.08) 1px, transparent 1.3px) 0 0 / 6px 6px;
+  --glow: 0 0 0 transparent;
+  --content-width: 1200px;
+}
+
+[data-theme='night'] {
+  --color-primary: #ff3a2e;
+  --color-primary-dark: #b81e14;
+  --color-accent: #ffd23f;
+  --color-accent-dark: #ff8a1f;
+  --color-bg: #0b0d16;
+  --color-surface: #141828;
+  --color-surface-2: #1e2338;
+  --color-border: #3a4166;
+  --color-text: #f3eee4;
+  --color-text-muted: #a9aec6;
+  --color-success: #4be38a;
+  --color-error: #ff5c74;
+  --color-error-bg: #3e1222;
+  --color-cursor: #ffd23f;
+  --color-sky: #46d7f0;
+  --color-sand: #2a2440;
+  --color-chrome: #8e97b0;
+  --color-horizon: #0e1530;
+  --color-asphalt: #10121c;
+
+  --finger-left-pinky: oklch(0.42 0.1 15);
+  --finger-left-ring: oklch(0.42 0.1 60);
+  --finger-left-middle: oklch(0.44 0.1 100);
+  --finger-left-index: oklch(0.42 0.1 145);
+  --finger-right-index: oklch(0.42 0.1 195);
+  --finger-right-middle: oklch(0.42 0.1 245);
+  --finger-right-ring: oklch(0.42 0.1 290);
+  --finger-right-pinky: oklch(0.42 0.1 340);
+  --finger-thumb: oklch(0.36 0.01 70);
+
+  --shadow-card: 0 0 0 1px #3a4166, 0 0 28px -8px rgba(70, 215, 240, 0.45);
+  --texture: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 3px);
+  --glow: 0 0 14px rgba(255, 210, 63, 0.55);
+}
