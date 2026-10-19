@@ -1,14 +1,32 @@
 import { createBrowserRouter } from 'react-router-dom'
 import Layout from './Layout.jsx'
-import HomePage from '../pages/HomePage.jsx'
-import NotFoundPage from '../pages/NotFoundPage.jsx'
+import ProtectedRoute from './ProtectedRoute.jsx'
+import PageLoader from '../components/PageLoader.jsx'
+
+const page = (load) => async () => ({ Component: (await load()).default })
 
 const router = createBrowserRouter([
   {
     element: <Layout />,
+    hydrateFallbackElement: <PageLoader />,
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '*', element: <NotFoundPage /> },
+      { index: true, lazy: page(() => import('../pages/HomePage.jsx')) },
+      { path: 'train', lazy: page(() => import('../pages/TrainPage.jsx')) },
+      { path: 'career', lazy: page(() => import('../pages/CareerPage.jsx')) },
+      { path: 'daily', lazy: page(() => import('../pages/DailyPage.jsx')) },
+      { path: 'leaderboard', lazy: page(() => import('../pages/LeaderboardPage.jsx')) },
+      { path: 'achievements', lazy: page(() => import('../pages/AchievementsPage.jsx')) },
+      { path: 'login', lazy: page(() => import('../pages/LoginPage.jsx')) },
+      { path: 'register', lazy: page(() => import('../pages/RegisterPage.jsx')) },
+      { path: 'oauth/callback', lazy: page(() => import('../pages/OAuthCallbackPage.jsx')) },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: 'profile', lazy: page(() => import('../pages/ProfilePage.jsx')) },
+          { path: 'garage', lazy: page(() => import('../pages/GaragePage.jsx')) },
+        ],
+      },
+      { path: '*', lazy: page(() => import('../pages/NotFoundPage.jsx')) },
     ],
   },
 ])
