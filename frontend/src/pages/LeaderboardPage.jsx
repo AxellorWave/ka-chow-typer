@@ -36,6 +36,8 @@ export default function LeaderboardPage() {
     enabled: status === 'ready',
   })
 
+  const shownMetric = METRICS[data?.metric] ?? metric
+
   const updateParam = (name, value) => {
     setSearchParams((current) => {
       const next = new URLSearchParams(current)
@@ -98,13 +100,13 @@ export default function LeaderboardPage() {
       {data && data.items.length > 0 && (
         <LeaderboardTable
           items={data.items}
-          metric={metric}
+          metric={shownMetric}
           currentUserId={user?.id}
           dimmed={isPlaceholderData}
         />
       )}
 
-      {data && <MyPositionBar user={user} me={data.me} metric={metric} total={data.total} />}
+      {data && <MyPositionBar user={user} me={data.me} metric={shownMetric} total={data.total} />}
     </div>
   )
 }
