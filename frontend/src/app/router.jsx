@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom'
 import Layout from './Layout.jsx'
+import GuestRoute from './GuestRoute.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
 import PageLoader from '../components/PageLoader.jsx'
 
@@ -16,8 +17,13 @@ const router = createBrowserRouter([
       { path: 'daily', lazy: page(() => import('../pages/DailyPage.jsx')) },
       { path: 'leaderboard', lazy: page(() => import('../pages/LeaderboardPage.jsx')) },
       { path: 'achievements', lazy: page(() => import('../pages/AchievementsPage.jsx')) },
-      { path: 'login', lazy: page(() => import('../pages/LoginPage.jsx')) },
-      { path: 'register', lazy: page(() => import('../pages/RegisterPage.jsx')) },
+      {
+        element: <GuestRoute />,
+        children: [
+          { path: 'login', lazy: page(() => import('../pages/LoginPage.jsx')) },
+          { path: 'register', lazy: page(() => import('../pages/RegisterPage.jsx')) },
+        ],
+      },
       { path: 'oauth/callback', lazy: page(() => import('../pages/OAuthCallbackPage.jsx')) },
       {
         element: <ProtectedRoute />,
