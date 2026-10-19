@@ -66,7 +66,7 @@ function useCountdown(active, round, onDone) {
   return count
 }
 
-export default function RunScreen({ run, onFinish, onExit }) {
+export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Сменить режим' }) {
   const [phase, setPhase] = useState('countdown')
   const [round, setRound] = useState(0)
   const tracker = useMemo(() => createScoreTracker(), [])
@@ -86,6 +86,7 @@ export default function RunScreen({ run, onFinish, onExit }) {
         lang: run.lang,
         difficulty: run.difficulty,
         text_id: run.text_id ?? null,
+        track_id: run.track_id ?? null,
         score,
         max_combo: maxCombo,
       }
@@ -238,7 +239,7 @@ export default function RunScreen({ run, onFinish, onExit }) {
           </span>
         )}
         <button type="button" className={styles.exit} onClick={onExit}>
-          Сменить режим
+          {exitLabel}
         </button>
       </footer>
     </section>
