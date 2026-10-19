@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
 import SaveProgressCta from '../auth/SaveProgressCta.jsx'
+import { pitstopPath } from '../pitstop/pitstop.js'
 import { formatDuration, formatNumber } from './format.js'
 import { useSaveRun } from './useSaveRun.js'
 import styles from './ResultScreen.module.css'
@@ -93,7 +95,10 @@ export default function ResultScreen({
   onChangeSetup,
   changeLabel = 'Сменить режим',
   againLabel = 'Ещё заезд',
+  showPitstop = true,
+  renderReport,
 }) {
+  const navigate = useNavigate()
   const save = useSaveRun(payload, Boolean(user))
 
   useEffect(() => {
@@ -138,11 +143,15 @@ export default function ResultScreen({
 
       {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
 
+      {renderReport?.(save)}
+
       <div className={styles.actions}>
         <Button onClick={onAgain}>{againLabel}</Button>
-        <Button variant="accent" disabled title="Появится вместе с пит-стопом">
-          Пит-стоп · скоро
-        </Button>
+        {showPitstop && (
+          <Button variant="accent" onClick={() => navigate(pitstopPath(payload.lang))}>
+            Пит-стоп
+          </Button>
+        )}
         <button type="button" className={styles.link} onClick={onChangeSetup}>
           {changeLabel}
         </button>
