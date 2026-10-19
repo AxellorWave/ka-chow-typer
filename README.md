@@ -142,3 +142,51 @@ Access-токен живёт 30 минут и передаётся в загол
 Новый провайдер подключается так: модуль `services/oauth_<provider>.py` с функциями `is_configured()`, `authorize_url(state, code_challenge)`, `fetch_profile(code, code_verifier)` и строка в `PROVIDERS` в `api/oauth.py`.
 
 В бэкенде защищённый эндпоинт помечается `@jwt_required()`, текущий пользователь доступен через `from flask_jwt_extended import current_user`. Для эндпоинтов, доступных и гостю, используется `@jwt_required(optional=True)`.
+
+### Статистика
+
+Все эндпоинты требуют `Authorization: Bearer`. Даты считаются по московскому времени. У нового пользователя приходят нули и пустые списки, а не ошибка.
+
+| Метод | Путь | Что отдаёт |
+|---|---|---|
+| GET | `/api/stats/summary` | Общие цифры по всем заездам |
+| GET | `/api/stats/progress?range=7d\|30d\|90d` | Динамика по дням, по умолчанию `7d` |
+| GET | `/api/stats/keys` | Статистика по клавишам, самые сложные клавиши и биграммы |
+
+`summary`:
+
+```json
+{
+  "runs": 4, "active_days": 3, "total_duration_ms": 15240,
+  "total_chars": 68, "total_typed": 75, "total_errors": 7, "total_score": 680,
+  "best_wpm": 100.0, "avg_wpm": 62.8, "best_cpm": 500.0, "avg_cpm": 314.2,
+  "avg_accuracy": 91.1, "max_combo": 17, "last_run_at": "2026-10-19T14:23:19+00:00"
+}
+```
+
+`progress` возвращает каждый день диапазона, включая дни без заездов: у них `runs: 0`, а средние равны `null`. Для Chart.js это разрывы на графике (`spanGaps`).
+
+```json
+{
+  "range_days": 7, "from": "2026-10-13", "to": "2026-10-19",
+  "points": [
+    {"date": "2026-10-19", "runs": 2, "avg_wpm": 67.8, "best_wpm": 100.0, "avg_accuracy": 92.5, "errors": 3, "duration_ms": 7790}
+  ]
+}
+```
+
+`keys`:
+
+```json
+{
+  "keys": [{"key": "ы", "presses": 23, "errors": 7, "error_rate": 30.4, "avg_latency_ms": 256.0}],
+  "weakest_keys": [{"key": "щ", "presses": 6, "errors": 0, "error_rate": 0.0, "avg_latency_ms": 600.0}],
+  "weakest_bigrams": [{"bigram": "мы", "presses": 7, "errors": 3, "error_rate": 42.9, "avg_latency_ms": 180.0}],
+  "min_presses": 5
+}
+```
+
+- `keys` — все клавиши пользователя, отсортированные по символу. Нужны для тепловой карты; пробел и перевод строки тоже здесь.
+- `error_rate` — процент ошибок от всех попыток нажать клавишу, `avg_latency_ms` — средняя пауза перед нажатием.
+- `weakest_keys` и `weakest_bigrams` — до 10 штук, сначала по проценту ошибок, потом по задержке. Попадает клавиша с минимум `min_presses` нажатиями, у которой есть ошибки или средняя задержка в 1.2 раза выше средней по пользователю. Пробелы и переводы строк сюда не входят.
+- Функции `weakest_keys(user_id)` и `weakest_bigrams(user_id)` из `services/stats.py` можно переиспользовать для пит-стопа (#29).
