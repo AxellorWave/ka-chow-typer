@@ -1,0 +1,19 @@
+[
+  {"code": "ka_chow", "title": "Ka-chow!", "description": "Проехать первый заезд", "icon": "⚡", "condition": {"type": "runs_count", "threshold": 1}},
+  {"code": "cpm_200", "title": "Разгон", "description": "Набрать 200 символов в минуту за один заезд", "icon": "🚀", "condition": {"type": "run_metric", "metric": "cpm", "threshold": 200}},
+  {"code": "flawless_1000", "title": "Чистый круг", "description": "Напечатать 1000 символов без единой ошибки за один заезд", "icon": "💎", "condition": {"type": "flawless_run", "threshold": 1000}},
+  {"code": "steel_finger", "title": "Стальной палец", "description": "Сделать 1000 верных нажатий подряд", "icon": "🦾", "condition": {"type": "run_metric", "metric": "max_combo", "threshold": 1000}},
+  {"code": "typing_genius", "title": "Печатный гений", "description": "Достичь скорости 300 слов в минуту", "icon": "🧠", "condition": {"type": "run_metric", "metric": "wpm", "threshold": 300}},
+  {"code": "combo_master", "title": "Комбо-мастер", "description": "Собрать комбо из 100 символов", "icon": "🔥", "condition": {"type": "run_metric", "metric": "max_combo", "threshold": 100}},
+  {"code": "perfect_accuracy", "title": "Как по нотам", "description": "Пройти заезд от 100 символов со 100% точностью", "icon": "🎯", "condition": {"type": "run_metric", "metric": "accuracy", "threshold": 100, "min_chars": 100}},
+  {"code": "polyglot", "title": "Полиглот", "description": "Проехать заезды на русском и английском", "icon": "🌍", "condition": {"type": "distinct_langs", "threshold": 2, "langs": ["ru", "en"]}},
+  {"code": "coder", "title": "Кодер", "description": "Проехать 10 заездов в режиме кода", "icon": "💻", "condition": {"type": "mode_runs", "mode": "code", "threshold": 10}},
+  {"code": "week_on_track", "title": "Неделя на трассе", "description": "Тренироваться 7 дней подряд", "icon": "📅", "condition": {"type": "streak", "threshold": 7}},
+  {"code": "ghost_buster", "title": "Обогнал призрака", "description": "Победить призрака в заезде", "icon": "👻", "condition": {"type": "ghost_beaten", "threshold": 1}},
+  {"code": "piston_cup", "title": "Кубок Поршня", "description": "Получить золотой кубок на всех трассах карьеры", "icon": "🏆", "condition": {"type": "gold_cups", "threshold": 10}},
+  {"code": "night_racer", "title": "Ночной гонщик", "description": "Проехать заезд между полуночью и пятью утра по МСК", "icon": "🌙", "condition": {"type": "night_run", "threshold": 1, "from_hour": 0, "to_hour": 5}},
+  {"code": "daily_driver", "title": "Ежедневный заезд", "description": "Пройти 5 ежедневных испытаний", "icon": "🗓️", "condition": {"type": "daily_runs", "threshold": 5}},
+  {"code": "marathon", "title": "Марафонец", "description": "Напечатать 100 000 верных символов за всё время", "icon": "🏁", "condition": {"type": "total_chars", "threshold": 100000}},
+  {"code": "veteran", "title": "Ветеран трассы", "description": "Проехать 100 заездов", "icon": "🎖️", "condition": {"type": "runs_count", "threshold": 100}},
+  {"code": "level_10", "title": "Легенда Радиатор-Спрингс", "description": "Достичь 10 уровня", "icon": "⭐", "condition": {"type": "level", "threshold": 10}}
+]

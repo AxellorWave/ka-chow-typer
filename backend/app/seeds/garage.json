@@ -1,0 +1,22 @@
+[
+  {"code": "color_red", "slot": "color", "title": "Красный Маквин", "asset": "#d7262b", "unlock_type": "default", "unlock_value": null},
+  {"code": "color_yellow", "slot": "color", "title": "Жёлтая Круз", "asset": "#f6c304", "unlock_type": "level", "unlock_value": "2"},
+  {"code": "color_blue", "slot": "color", "title": "Голубая Салли", "asset": "#5ba4d9", "unlock_type": "level", "unlock_value": "4"},
+  {"code": "color_rust", "slot": "color", "title": "Ржавчина Мэтра", "asset": "#8b4a2b", "unlock_type": "achievement", "unlock_value": "ka_chow"},
+  {"code": "color_black", "slot": "color", "title": "Чёрный Шторм", "asset": "#1c1f26", "unlock_type": "level", "unlock_value": "10"},
+  {"code": "decal_none", "slot": "decal", "title": "Без наклеек", "asset": null, "unlock_type": "default", "unlock_value": null},
+  {"code": "decal_bolt", "slot": "decal", "title": "Молния 95", "asset": "decals/bolt", "unlock_type": "default", "unlock_value": null},
+  {"code": "decal_flames", "slot": "decal", "title": "Языки пламени", "asset": "decals/flames", "unlock_type": "level", "unlock_value": "5"},
+  {"code": "decal_stars", "slot": "decal", "title": "Звёздная россыпь", "asset": "decals/stars", "unlock_type": "achievement", "unlock_value": "night_racer"},
+  {"code": "decal_checkered", "slot": "decal", "title": "Финишные шашки", "asset": "decals/checkered", "unlock_type": "achievement", "unlock_value": "piston_cup"},
+  {"code": "wheels_stock", "slot": "wheels", "title": "Заводские", "asset": "wheels/stock", "unlock_type": "default", "unlock_value": null},
+  {"code": "wheels_whitewall", "slot": "wheels", "title": "Белые боковины", "asset": "wheels/whitewall", "unlock_type": "level", "unlock_value": "3"},
+  {"code": "wheels_lightyear", "slot": "wheels", "title": "Шины Lightyear", "asset": "wheels/lightyear", "unlock_type": "achievement", "unlock_value": "steel_finger"},
+  {"code": "wheels_offroad", "slot": "wheels", "title": "Внедорожные", "asset": "wheels/offroad", "unlock_type": "level", "unlock_value": "6"},
+  {"code": "wheels_gold", "slot": "wheels", "title": "Золотые диски", "asset": "wheels/gold", "unlock_type": "achievement", "unlock_value": "typing_genius"},
+  {"code": "spoiler_none", "slot": "spoiler", "title": "Без спойлера", "asset": null, "unlock_type": "default", "unlock_value": null},
+  {"code": "spoiler_standard", "slot": "spoiler", "title": "Стандартный", "asset": "spoilers/standard", "unlock_type": "level", "unlock_value": "2"},
+  {"code": "spoiler_carbon", "slot": "spoiler", "title": "Карбоновый", "asset": "spoilers/carbon", "unlock_type": "level", "unlock_value": "5"},
+  {"code": "spoiler_wing", "slot": "spoiler", "title": "Высокое крыло", "asset": "spoilers/wing", "unlock_type": "achievement", "unlock_value": "week_on_track"},
+  {"code": "spoiler_champion", "slot": "spoiler", "title": "Спойлер чемпиона", "asset": "spoilers/champion", "unlock_type": "level", "unlock_value": "12"}
+]
