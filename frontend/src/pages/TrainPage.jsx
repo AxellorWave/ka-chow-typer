@@ -1,4 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { getPitstop } from '../api/pitstop.js'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import PageLoader from '../components/PageLoader.jsx'
@@ -7,6 +9,9 @@ import TrackStart from '../features/career/TrackStart.jsx'
 import { lockText, trackSetup } from '../features/career/tracks.js'
 import { useTracks } from '../features/career/useTracks.js'
 import { useDaily } from '../features/daily/useDaily.js'
+import PitstopReport from '../features/pitstop/PitstopReport.jsx'
+import PitstopStart from '../features/pitstop/PitstopStart.jsx'
+import { pitstopLang } from '../features/pitstop/pitstop.js'
 import ResultScreen from '../features/train/ResultScreen.jsx'
 import RunScreen from '../features/train/RunScreen.jsx'
 import RunSetup from '../features/train/RunSetup.jsx'
@@ -186,6 +191,61 @@ function DailyTrain({ user, date }) {
   return <DailyRun key={data.date} user={user} daily={data} />
 }
 
+function PitstopTrain({ user, lang }) {
+  const navigate = useNavigate()
+  const { data, isFetching, isError, refetch } = useQuery({
+    queryKey: ['pitstop', lang, user.id],
+    queryFn: () => getPitstop({ lang }),
+    gcTime: 0,
+  })
+  const setup = useMemo(() => ({ lang }), [lang])
+  const loadText = useMemo(() => async () => data, [data])
+  const flow = useRunFlow(setup, loadText)
+  const { backToSetup } = flow
+
+  const again = useCallback(() => {
+    backToSetup()
+    refetch()
+  }, [backToSetup, refetch])
+
+  const renderReport = useCallback(
+    (save) => <PitstopReport pitstop={flow.run} saved={save.isSuccess} />,
+    [flow.run],
+  )
+
+  if (flow.phase === 'run' && flow.run) {
+    return (
+      <RunScreen
+        key={flow.run.key}
+        run={flow.run}
+        onFinish={flow.finish}
+        onExit={backToSetup}
+        exitLabel="Из боксов"
+      />
+    )
+  }
+
+  if (flow.phase === 'result' && flow.result) {
+    return (
+      <ResultScreen
+        payload={flow.result}
+        user={user}
+        onAgain={again}
+        onChangeSetup={() => navigate('/train')}
+        changeLabel="К тренировке"
+        againLabel="Ещё пит-стоп"
+        showPitstop={false}
+        renderReport={renderReport}
+      />
+    )
+  }
+
+  if (isFetching) return <PageLoader />
+  if (isError) return <QueryError onRetry={refetch} title="Не удалось подготовить пит-стоп" />
+
+  return <PitstopStart pitstop={data} onStart={flow.start} />
+}
+
 export default function TrainPage() {
   const status = useAuthStore((state) => state.status)
   const user = useAuthStore((state) => state.user)
@@ -193,11 +253,13 @@ export default function TrainPage() {
   const [searchParams] = useSearchParams()
   const trackId = Number(searchParams.get('track')) || null
   const dailyDate = searchParams.get('daily')
+  const pitstop = searchParams.get('pitstop')
 
-  if (!trackId && !dailyDate) return <FreeTrain user={user} />
+  if (!trackId && !dailyDate && !pitstop) return <FreeTrain user={user} />
   if (status !== 'ready') return <PageLoader />
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />
 
+  if (pitstop) return <PitstopTrain key={pitstop} user={user} lang={pitstopLang(pitstop)} />
   if (dailyDate) return <DailyTrain user={user} date={dailyDate} />
   return <TrackTrain user={user} trackId={trackId} />
 }
