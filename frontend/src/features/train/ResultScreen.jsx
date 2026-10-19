@@ -1,7 +1,9 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
 import SaveProgressCta from '../auth/SaveProgressCta.jsx'
+import LevelUpModal from '../effects/LevelUpModal.jsx'
+import { showAchievementToasts } from '../effects/toastStore.js'
 import { pitstopPath } from '../pitstop/pitstop.js'
 import { formatDuration, formatNumber } from './format.js'
 import { useSaveRun } from './useSaveRun.js'
@@ -100,6 +102,14 @@ export default function ResultScreen({
 }) {
   const navigate = useNavigate()
   const save = useSaveRun(payload, Boolean(user))
+  const [levelUpOpen, setLevelUpOpen] = useState(false)
+  const closeLevelUp = useCallback(() => setLevelUpOpen(false), [])
+
+  useEffect(() => {
+    if (!save.data) return
+    setLevelUpOpen(Boolean(save.data.level_up))
+    showAchievementToasts(save.data.new_achievements)
+  }, [save.data])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -144,6 +154,15 @@ export default function ResultScreen({
       {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
 
       {renderReport?.(save)}
+
+      {save.data && (
+        <LevelUpModal
+          level={save.data.level}
+          levelsGained={save.data.levels_gained}
+          open={levelUpOpen}
+          onClose={closeLevelUp}
+        />
+      )}
 
       <div className={styles.actions}>
         <Button onClick={onAgain}>{againLabel}</Button>

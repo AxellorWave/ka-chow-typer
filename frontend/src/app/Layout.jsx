@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigation } from 'react-router-dom'
+import ToastHost from '../features/effects/ToastHost.jsx'
 import UserMenu from './UserMenu.jsx'
 import styles from './Layout.module.css'
 
@@ -72,6 +73,7 @@ export default function Layout() {
       <main className={styles.main}>
         <Outlet />
       </main>
+      <ToastHost />
     </div>
   )
 }
