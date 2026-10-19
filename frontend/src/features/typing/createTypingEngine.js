@@ -10,6 +10,7 @@ const initialState = () => ({
   errorAt: null,
   startedAt: null,
   finishedAt: null,
+  pausedAt: null,
 })
 
 const round1 = (value) => Math.round(value * 10) / 10
@@ -59,7 +60,7 @@ export function createTypingEngine(rawText) {
 
   function press(key, now) {
     const state = store.getState()
-    if (state.finishedAt !== null || text.length === 0) return null
+    if (state.finishedAt !== null || state.pausedAt !== null || text.length === 0) return null
 
     const startedAt = state.startedAt ?? now
     const t = Math.max(0, Math.round(now - startedAt))
@@ -104,12 +105,31 @@ export function createTypingEngine(rawText) {
 
   function getMetrics(now) {
     const state = store.getState()
-    const durationMs = state.startedAt === null ? 0 : elapsed(state, state.finishedAt ?? now)
-    return computeMetrics({
-      correct: state.position,
-      typed: state.typed,
-      errors: state.errors,
+    const durationMs =
+      state.startedAt === null ? 0 : elapsed(state, state.finishedAt ?? state.pausedAt ?? now)
+    return {
+      ...computeMetrics({
+        correct: state.position,
+        typed: state.typed,
+        errors: state.errors,
+        durationMs,
+      }),
       durationMs,
+    }
+  }
+
+  function pause(now) {
+    const state = store.getState()
+    if (state.startedAt === null || state.finishedAt !== null || state.pausedAt !== null) return
+    store.setState({ pausedAt: now })
+  }
+
+  function resume(now) {
+    const state = store.getState()
+    if (state.pausedAt === null) return
+    store.setState({
+      startedAt: state.startedAt + Math.max(0, now - state.pausedAt),
+      pausedAt: null,
     })
   }
 
@@ -140,5 +160,5 @@ export function createTypingEngine(rawText) {
     store.setState(initialState())
   }
 
-  return { text, store, press, getMetrics, getResult, reset }
+  return { text, store, press, pause, resume, getMetrics, getResult, reset }
 }
