@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore.js'
 
-const API_BASE_URL = '/api'
+export const API_BASE_URL = '/api'
 const NO_REFRESH_URLS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout']
 
 const client = axios.create({
