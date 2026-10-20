@@ -21,6 +21,10 @@ function Ribbon() {
 
 const clamp = (value) => Math.min(1, Math.max(0, value || 0))
 
+const skidClass = (count) => (count % 2 ? styles.skid : styles.skidAlt)
+
+const LABEL_STEP = 10
+
 function Lane({ car }) {
   const classNames = [styles.lane, car.ghost && styles.ghost].filter(Boolean).join(' ')
   return (
@@ -33,10 +37,7 @@ function Lane({ car }) {
           data-finished={car.finished || undefined}
           data-car={car.id}
         >
-          <div
-            key={car.skid ?? 0}
-            className={car.skid ? `${styles.car} ${styles.skid}` : styles.car}
-          >
+          <div className={car.skid ? `${styles.car} ${skidClass(car.skid)}` : styles.car}>
             <RaceCar config={car.config} combo={car.combo} />
           </div>
           {car.label && <span className={styles.label}>{car.label}</span>}
@@ -53,7 +54,7 @@ export default function RaceTrack({ cars, moving = false, finished = false }) {
       data-moving={moving || undefined}
       data-finished={finished || undefined}
       role="img"
-      aria-label={`Трек: ${cars.map((car) => `${car.label ?? 'машинка'} ${Math.round(clamp(car.progress) * 100)}%`).join(', ')}`}
+      aria-label={`Трек: ${cars.map((car) => `${car.label ?? 'машинка'} ${Math.round(clamp(car.progress) * LABEL_STEP) * LABEL_STEP}%`).join(', ')}`}
     >
       <Ribbon />
       <div className={styles.road}>

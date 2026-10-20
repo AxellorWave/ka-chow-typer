@@ -17,12 +17,16 @@ const SPEED_TIERS = [
 ]
 
 const LEAD_THRESHOLD = 0.01
+const PROGRESS_STEPS = 200
 
 const speedFor = (wpm) => SPEED_TIERS.find((tier) => wpm < tier.below).speed
 
 export default function TrainTrack({ engine, tracker, finished, ghost }) {
   const user = useAuthStore((state) => state.user)
-  const position = useStore(engine.store, (state) => state.position)
+  const total = engine.text.length
+  const progressStep = useStore(engine.store, (state) =>
+    total > 0 ? Math.floor((state.position / total) * PROGRESS_STEPS) : 0,
+  )
   const errors = useStore(engine.store, (state) => state.errors)
   const started = useStore(engine.store, (state) => state.startedAt !== null)
   const paused = useStore(engine.store, (state) => state.pausedAt !== null)
@@ -31,8 +35,7 @@ export default function TrainTrack({ engine, tracker, finished, ghost }) {
   const ghostProgress = useGhostProgress(engine, ghost)
 
   const moving = started && !paused && !finished
-  const total = engine.text.length
-  const playerProgress = total > 0 ? position / total : 0
+  const playerProgress = progressStep / PROGRESS_STEPS
   const gap = ghost && moving ? playerProgress - ghostProgress : 0
   const lead = gap > LEAD_THRESHOLD ? 1 : gap < -LEAD_THRESHOLD ? -1 : 0
   const leadRef = useRef(0)
