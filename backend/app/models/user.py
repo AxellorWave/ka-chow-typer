@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import Date, Integer, String, text
+from sqlalchemy import Date, DateTime, Integer, String, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,6 +14,7 @@ class User(TimestampMixin, db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str | None] = mapped_column(String(255), unique=True)
     password_hash: Mapped[str | None] = mapped_column(String(255))
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     nickname: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     avatar_url: Mapped[str | None] = mapped_column(String(512))
     xp: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"), nullable=False)
