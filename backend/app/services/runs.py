@@ -1,3 +1,4 @@
+import math
 from collections import defaultdict
 
 from sqlalchemy import func, select
@@ -6,10 +7,12 @@ from sqlalchemy.dialects.postgresql import insert
 from app.errors import ApiError
 from app.extensions import db
 from app.models import BigramStat, KeyStat, Run, Text, Track, UserTrack
+from app.schemas.runs import MAX_DURATION_MS, MAX_WPM
 from app.services.achievements import check_achievements
 from app.services.daily import validate_daily_run
 from app.services.ghost import check_ghost_beaten
 from app.services.leveling import add_xp, run_xp, xp_for_level
+from app.services.ranking import is_ranked
 from app.services.streaks import update_streak
 from app.services.texts import check_access
 from app.services.tracks import check_track_unlocked, get_track
@@ -30,9 +33,10 @@ def save_run(user, data):
     elif data["track_id"] is None:
         check_access(user, data["mode"], data["difficulty"])
     validate_references(user, data)
-    ghost_beaten = check_ghost_beaten(data, data.pop("ghost_run_id"))
     aggregates = aggregate_keystrokes(data["text"], data["keystrokes"])
     validate_totals(data, aggregates)
+    data.update(run_metrics(aggregates))
+    ghost_beaten = check_ghost_beaten(data, data.pop("ghost_run_id"))
 
     xp_earned = run_xp(data["score"])
     progress = add_xp(user.xp, xp_earned)
@@ -114,6 +118,10 @@ class KeystrokeAggregates:
         self.bigrams = defaultdict(lambda: [0, 0, 0])
         self.correct = 0
         self.errors = 0
+        self.presses = 0
+        self.combo = 0
+        self.max_combo = 0
+        self.last_ms = 0
 
     @staticmethod
     def add(stats, key, ok, latency):
@@ -131,10 +139,11 @@ def aggregate_keystrokes(text, keystrokes):
         if position >= len(text):
             raise ApiError(400, "run_mismatch", "Нажатий больше, чем символов в тексте")
         expected = text[position]
-        if ok and char != expected:
+        if ok != (char == expected):
             raise ApiError(400, "run_mismatch", "Нажатия не совпадают с текстом")
         if t_ms < previous_ms:
             raise ApiError(400, "run_mismatch", "Время нажатий должно возрастать")
+        aggregates.last_ms = t_ms
         if auto:
             aggregates.correct += 1
             position += 1
@@ -146,10 +155,35 @@ def aggregate_keystrokes(text, keystrokes):
             aggregates.add(aggregates.bigrams, text[position - 1] + expected, ok, latency)
         if ok:
             aggregates.correct += 1
+            aggregates.presses += 1
+            aggregates.combo += 1
+            aggregates.max_combo = max(aggregates.max_combo, aggregates.combo)
             position += 1
         else:
             aggregates.errors += 1
+            aggregates.combo = 0
     return aggregates
+
+
+def round1(value):
+    return math.floor(value * 10 + 0.5) / 10
+
+
+def run_metrics(aggregates):
+    duration_ms = max(1, round(aggregates.last_ms))
+    if duration_ms > MAX_DURATION_MS:
+        raise ApiError(400, "run_mismatch", "Заезд длиннее допустимого")
+    cpm = aggregates.presses / (duration_ms / 60_000)
+    if cpm / 5 > MAX_WPM:
+        raise ApiError(400, "run_mismatch", "Скорость выше допустимой")
+    presses = aggregates.presses + aggregates.errors
+    return {
+        "duration_ms": duration_ms,
+        "cpm": round1(cpm),
+        "wpm": round1(cpm / 5),
+        "accuracy": round1(aggregates.presses / presses * 100) if presses else 100,
+        "max_combo": aggregates.max_combo,
+    }
 
 
 def validate_totals(data, aggregates):
@@ -201,7 +235,8 @@ def update_cups(user, run):
     if run.track_id is None:
         return None
     track = db.session.get(Track, run.track_id)
-    cups = earned_cups(track, run)
+    ranked = is_ranked(run.text, run.correct_chars)
+    cups = earned_cups(track, run) if ranked else 0
     record = db.session.get(UserTrack, (user.id, track.id), with_for_update=True)
     if record is None:
         record = UserTrack(user_id=user.id, track_id=track.id, cups=0)
@@ -212,7 +247,7 @@ def update_cups(user, run):
         if record.best_run_id
         else None
     )
-    if best_wpm is None or cups > previous or run.wpm > best_wpm:
+    if ranked and (best_wpm is None or cups > previous or run.wpm > best_wpm):
         record.best_run_id = run.id
     record.cups = max(previous, cups)
     return {"track_id": track.id, "cups": record.cups, "new_cups": record.cups - previous}

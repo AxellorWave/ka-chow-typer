@@ -1,8 +1,9 @@
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from app.errors import ApiError
 from app.extensions import db
 from app.models import Run, Text
+from app.services.ranking import is_ranked, ranked_run
 from app.services.tracks import get_track
 
 MAX_TIMELINE_POINTS = 200
@@ -12,12 +13,8 @@ def ghost_not_found():
     return ApiError(404, "ghost_not_found", "Призрака для этого заезда пока нет")
 
 
-def completed_run():
-    return Run.correct_chars == func.char_length(Run.text)
-
-
 def find_ghost(user, who, text_id, track_id):
-    query = select(Run).where(completed_run())
+    query = select(Run).where(ranked_run())
     if track_id is not None:
         get_track(track_id)
         query = query.where(Run.track_id == track_id)
@@ -67,7 +64,7 @@ def ghost(user, who, text_id, track_id):
 
 
 def get_ghost_run(run_id):
-    run = db.session.scalars(select(Run).where(Run.id == run_id, completed_run())).first()
+    run = db.session.scalars(select(Run).where(Run.id == run_id, ranked_run())).first()
     if run is None:
         raise ghost_not_found()
     return run
@@ -85,5 +82,5 @@ def check_ghost_beaten(data, ghost_run_id):
     ghost_run = get_ghost_run(ghost_run_id)
     if not ghost_matches(ghost_run, data):
         raise ApiError(400, "ghost_mismatch", "Призрак проехал другой текст или трассу")
-    completed = data["correct_chars"] == len(data["text"])
+    completed = is_ranked(data["text"], data["correct_chars"])
     return completed and data["duration_ms"] < ghost_run.duration_ms

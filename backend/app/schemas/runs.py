@@ -19,7 +19,6 @@ MAX_KEY_LENGTH = 8
 
 REQUIRED = {"required": "Обязательное поле", "null": "Обязательное поле"}
 INTEGER_ERRORS = {**REQUIRED, "invalid": "Ожидается целое число"}
-NUMBER_ERRORS = {**REQUIRED, "invalid": "Ожидается число"}
 ENUM_ERRORS = {**REQUIRED, "unknown": "Допустимо: {choices}"}
 NON_NEGATIVE = validate.Range(min=0, error="Не меньше {min}")
 
@@ -27,12 +26,6 @@ NON_NEGATIVE = validate.Range(min=0, error="Не меньше {min}")
 def required_integer(*validators):
     return fields.Integer(
         required=True, strict=True, error_messages=INTEGER_ERRORS, validate=validators
-    )
-
-
-def required_number(*validators):
-    return fields.Float(
-        required=True, allow_nan=False, error_messages=NUMBER_ERRORS, validate=validators
     )
 
 
@@ -73,16 +66,9 @@ class RunCreateSchema(Schema):
         error_messages={**REQUIRED, "invalid": "Ожидается строка"},
         validate=validate.Length(min=1, max=MAX_TEXT_LENGTH, error="От {min} до {max} символов"),
     )
-    duration_ms = required_integer(
-        validate.Range(min=1, max=MAX_DURATION_MS, error="От {min} до {max} мс")
-    )
     typed_chars = required_integer(NON_NEGATIVE)
     correct_chars = required_integer(NON_NEGATIVE)
     errors = required_integer(NON_NEGATIVE)
-    cpm = required_number(NON_NEGATIVE)
-    wpm = required_number(validate.Range(min=0, max=MAX_WPM, error="От {min} до {max}"))
-    accuracy = required_number(validate.Range(min=0, max=100, error="От {min} до {max}"))
-    max_combo = required_integer(NON_NEGATIVE)
     score = required_integer(NON_NEGATIVE)
     keystrokes = fields.List(
         fields.Raw(),
@@ -98,6 +84,8 @@ class RunCreateSchema(Schema):
 
     @validates_schema
     def validate_totals(self, data, **kwargs):
+        if data["daily_date"] is not None and data["track_id"] is not None:
+            raise ValidationError("Заезд дня не может быть заездом трассы", "track_id")
         if data["lang"] not in MODE_LANGS[data["mode"]]:
             allowed = ", ".join(item.value for item in MODE_LANGS[data["mode"]])
             raise ValidationError(f"Для режима {data['mode'].value} допустимо: {allowed}", "lang")
@@ -105,8 +93,6 @@ class RunCreateSchema(Schema):
             raise ValidationError("Верных символов больше, чем нажатий", "correct_chars")
         if data["correct_chars"] + data["errors"] != data["typed_chars"]:
             raise ValidationError("Нажатия не сходятся с верными символами и ошибками", "errors")
-        if data["max_combo"] > data["correct_chars"]:
-            raise ValidationError("Комбо больше числа верных символов", "max_combo")
 
 
 class RunListQuerySchema(Schema):

@@ -5,6 +5,7 @@ from sqlalchemy import func, null, select
 from app.extensions import db
 from app.models import Run, User
 from app.services.clock import MSK
+from app.services.ranking import ranked_run
 
 PERIOD_DAYS = {"day": 1, "week": 7}
 MIN_ACCURACY_CHARS = 100
@@ -27,7 +28,7 @@ def _best_run(value_column, order_by, filters):
             Run.accuracy.label("accuracy"),
             Run.created_at.label("achieved_at"),
         )
-        .where(*filters)
+        .where(ranked_run(), *filters)
         .distinct(Run.user_id)
         .order_by(Run.user_id, *order_by)
         .subquery()
