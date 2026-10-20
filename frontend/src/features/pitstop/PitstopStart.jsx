@@ -1,22 +1,13 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
 import FocusKeys from './FocusKeys.jsx'
 import styles from './PitstopStart.module.css'
+import { useEnterToStart } from '../train/useEnterToStart.js'
 
 const LANG_TITLES = { ru: 'русской', en: 'английской' }
 
 export default function PitstopStart({ pitstop, onStart }) {
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'Enter' && !event.repeat && event.target === document.body) {
-        event.preventDefault()
-        onStart()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onStart])
+  useEnterToStart(onStart)
 
   const { focus, fallback } = pitstop
 

@@ -38,9 +38,12 @@ export function createTypingEngine(rawText) {
 
   const columnAt = (position) => position - text.lastIndexOf('\n', position - 1) - 1
 
+  const isIndentAt = (position) =>
+    /^[ \t]*$/.test(text.slice(text.lastIndexOf('\n', position - 1) + 1, position))
+
   const tabWidthAt = (position) => {
     if (text[position] === '\t') return 1
-    if (text[position] !== ' ') return 0
+    if (text[position] !== ' ' || !isIndentAt(position)) return 0
     const toNextStop = INDENT_SIZE - (columnAt(position) % INDENT_SIZE)
     let run = 0
     while (run < toNextStop && text[position + run] === ' ') run += 1

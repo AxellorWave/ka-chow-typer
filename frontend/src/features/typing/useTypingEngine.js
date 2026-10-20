@@ -3,6 +3,7 @@ import { createTypingEngine } from './createTypingEngine.js'
 
 const EDITABLE_TAGS = new Set(['INPUT', 'TEXTAREA', 'SELECT'])
 const IME_KEY_CODE = 229
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
 const isEditableTarget = (target) =>
   target instanceof HTMLElement && (target.isContentEditable || EDITABLE_TAGS.has(target.tagName))
@@ -10,7 +11,7 @@ const isEditableTarget = (target) =>
 export function toEngineKey(event) {
   if (event.repeat || event.isComposing || event.keyCode === IME_KEY_CODE) return null
   const altGraph = event.getModifierState?.('AltGraph') ?? false
-  if ((event.ctrlKey || event.metaKey || event.altKey) && !altGraph) return null
+  if (!altGraph && (event.ctrlKey || event.metaKey || (event.altKey && !IS_MAC))) return null
   if (event.key === 'Enter' || event.key === 'Tab') return event.key
   return event.key.length === 1 ? event.key : null
 }

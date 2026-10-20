@@ -1,22 +1,13 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
 import GhostPicker from '../ghost/GhostPicker.jsx'
 import CupRequirements from './CupRequirements.jsx'
 import { trackMeta } from './tracks.js'
 import styles from './TrackStart.module.css'
+import { useEnterToStart } from '../train/useEnterToStart.js'
 
 export default function TrackStart({ track, ghost, onGhostChange, onStart, loading, error }) {
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'Enter' && !event.repeat && !loading && event.target === document.body) {
-        event.preventDefault()
-        onStart()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [loading, onStart])
+  useEnterToStart(onStart, loading)
 
   return (
     <section className={styles.start} aria-labelledby="track-title">

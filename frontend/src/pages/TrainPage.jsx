@@ -239,7 +239,7 @@ function PitstopTrain({ user, lang }) {
   }, [backToSetup, refetch])
 
   const renderReport = useCallback(
-    (save) => <PitstopReport pitstop={flow.run} saved={save.isSuccess} />,
+    (payload) => <PitstopReport pitstop={flow.run} result={payload} />,
     [flow.run],
   )
 
