@@ -267,6 +267,16 @@
   box-shadow: var(--shadow-card);
 }
 
+.againError {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-error);
+  color: var(--color-paper);
+  font-weight: 600;
+}
+
 .cardHead {
   display: flex;
   flex-wrap: wrap;

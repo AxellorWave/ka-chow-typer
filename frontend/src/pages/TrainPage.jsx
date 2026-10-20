@@ -9,6 +9,8 @@ import TrackStart from '../features/career/TrackStart.jsx'
 import { lockText, trackSetup } from '../features/career/tracks.js'
 import { useTracks } from '../features/career/useTracks.js'
 import { useDaily } from '../features/daily/useDaily.js'
+import KeyboardRequired from '../features/keyboard/KeyboardRequired.jsx'
+import { useNeedsKeyboard } from '../features/keyboard/useNeedsKeyboard.js'
 import PitstopReport from '../features/pitstop/PitstopReport.jsx'
 import PitstopStart from '../features/pitstop/PitstopStart.jsx'
 import { pitstopLang } from '../features/pitstop/pitstop.js'
@@ -43,6 +45,8 @@ function FreeTrain({ user }) {
         payload={flow.result}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={flow.backToSetup}
       />
     )
@@ -87,6 +91,8 @@ function TrackRun({ user, track }) {
         ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={() => navigate('/career')}
         changeLabel="К карте трасс"
       />
@@ -172,6 +178,8 @@ function DailyRun({ user, daily }) {
         ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={toDaily}
         changeLabel="К заезду дня"
         againLabel="Ещё попытка"
@@ -270,7 +278,9 @@ export default function TrainPage() {
   const trackId = Number(searchParams.get('track')) || null
   const dailyDate = searchParams.get('daily')
   const pitstop = searchParams.get('pitstop')
+  const needsKeyboard = useNeedsKeyboard()
 
+  if (needsKeyboard) return <KeyboardRequired />
   if (!trackId && !dailyDate && !pitstop) return <FreeTrain user={user} />
   if (status !== 'ready') return <PageLoader />
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />

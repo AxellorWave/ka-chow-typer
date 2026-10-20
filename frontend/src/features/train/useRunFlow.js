@@ -1,6 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
 import { useCallback, useState } from 'react'
 import { getText } from '../../api/texts.js'
+import { useAuthStore } from '../../store/authStore.js'
+import { newClientRunId, usePendingRuns } from './pendingRuns.js'
 
 const textErrorMessage = (error) =>
   error.response?.data?.message ??
@@ -27,9 +29,13 @@ export function useRunFlow(setup, loadText = getText) {
   })
 
   const { mutate, isPending } = textMutation
-  const start = useCallback(() => mutate(setup), [mutate, setup])
+  const start = useCallback(() => {
+    if (!isPending) mutate(setup)
+  }, [isPending, mutate, setup])
 
-  const finish = useCallback((payload, finishGhost = null) => {
+  const finish = useCallback((runPayload, finishGhost = null) => {
+    const payload = { ...runPayload, client_run_id: newClientRunId() }
+    usePendingRuns.getState().add(useAuthStore.getState().user?.id ?? null, payload)
     setResult(payload)
     setGhost(finishGhost)
     setPhase('result')

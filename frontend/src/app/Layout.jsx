@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigation } from 'react-router-dom'
 import ToastHost from '../features/effects/ToastHost.jsx'
+import { usePendingRunsSync } from '../features/train/usePendingRunsSync.js'
 import { useSettingsStore } from '../store/settingsStore.js'
 import UserMenu from './UserMenu.jsx'
 import styles from './Layout.module.css'
@@ -25,6 +26,7 @@ export default function Layout() {
   const theme = useSettingsStore((state) => state.theme)
   const toggleTheme = useSettingsStore((state) => state.toggleTheme)
   const dark = theme === 'dark'
+  usePendingRunsSync()
 
   useEffect(() => {
     if (!menuOpen) {

@@ -112,6 +112,7 @@
 .burger {
   display: none;
   flex-direction: column;
+  align-items: stretch;
   justify-content: center;
   gap: 5px;
   width: 44px;

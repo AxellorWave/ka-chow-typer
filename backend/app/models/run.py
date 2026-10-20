@@ -26,10 +26,12 @@ class Run(db.Model):
         Index("ix_runs_text_id_wpm", "text_id", "wpm"),
         Index("ix_runs_track_id_wpm", "track_id", "wpm"),
         Index("ix_runs_daily_date_wpm", "daily_date", "wpm"),
+        Index("ix_runs_user_id_client_run_id", "user_id", "client_run_id", unique=True),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    client_run_id: Mapped[str | None] = mapped_column(String(64))
     mode: Mapped[str] = mapped_column(String(16), nullable=False)
     lang: Mapped[str] = mapped_column(String(16), nullable=False)
     difficulty: Mapped[int] = mapped_column(SmallInteger, nullable=False)

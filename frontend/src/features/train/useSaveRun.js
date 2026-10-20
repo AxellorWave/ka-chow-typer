@@ -1,35 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
-import { getMe } from '../../api/auth.js'
-import { saveRun } from '../../api/runs.js'
-import { useAuthStore } from '../../store/authStore.js'
+import { isRetryable, isUnauthorized, sendRun } from './pendingRuns.js'
+import { refreshAfterRun } from './refreshAfterRun.js'
 
 const MAX_RETRIES = 2
-
-const isRetryable = (error) => !error.response || error.response.status >= 500
 
 export function useSaveRun(payload, enabled) {
   const queryClient = useQueryClient()
   const startedRef = useRef(null)
 
   const mutation = useMutation({
-    mutationFn: saveRun,
+    mutationFn: sendRun,
     retry: (failureCount, error) => failureCount < MAX_RETRIES && isRetryable(error),
     retryDelay: (attempt) => 1000 * 2 ** attempt,
-    onSuccess: async () => {
-      queryClient.invalidateQueries({ queryKey: ['stats'] })
-      queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
-      queryClient.invalidateQueries({ queryKey: ['achievements'] })
-      queryClient.invalidateQueries({ queryKey: ['tracks'] })
-      queryClient.invalidateQueries({ queryKey: ['daily'] })
-      queryClient.invalidateQueries({ queryKey: ['ghost'] })
-      try {
-        const user = await getMe()
-        useAuthStore.setState({ user })
-      } catch {
-        return
-      }
-    },
+    onSuccess: () => refreshAfterRun(queryClient),
   })
 
   const { mutate } = mutation
@@ -43,6 +27,7 @@ export function useSaveRun(payload, enabled) {
   return {
     ...mutation,
     retryable: mutation.isError && isRetryable(mutation.error),
+    sessionExpired: mutation.isError && isUnauthorized(mutation.error),
     retry: () => mutate(payload),
   }
 }

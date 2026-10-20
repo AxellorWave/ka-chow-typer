@@ -14,7 +14,8 @@ run_list_query_schema = RunListQuerySchema()
 @jwt_required(locations=["headers"])
 def create_run():
     data = run_create_schema.load(request.get_json(silent=True) or {})
-    return jsonify(save_run(current_user, data)), 201
+    result, created = save_run(current_user, data)
+    return jsonify(result), 201 if created else 200
 
 
 @runs_bp.get("/me")
