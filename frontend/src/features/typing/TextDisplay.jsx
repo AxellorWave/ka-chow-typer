@@ -62,21 +62,35 @@ export default function TextDisplay({ engine, displayMode, variant = 'text', lin
   const position = useStore(engine.store, (state) => state.position)
   const hasError = useStore(engine.store, (state) => state.errorAt !== null)
   const containerRef = useRef(null)
+  const lineHeightRef = useRef(0)
+  const scrollRef = useRef(0)
 
   const tokens = useMemo(() => tokenize(engine.text), [engine.text])
   const currentIndex = findTokenIndex(tokens, position)
 
   useLayoutEffect(() => {
     const container = containerRef.current
-    const cursor = container?.querySelector('[data-cursor]')
-    if (!cursor) return
-    const lineHeight = parseFloat(getComputedStyle(container).lineHeight)
+    const measure = () => {
+      lineHeightRef.current = parseFloat(getComputedStyle(container).lineHeight)
+    }
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [])
+
+  useLayoutEffect(() => {
+    const container = containerRef.current
+    const cursor = container.querySelector('[data-cursor]')
+    const lineHeight = lineHeightRef.current
+    if (!cursor || !lineHeight) return
     const line = Math.floor((cursor.offsetTop + cursor.offsetHeight / 2) / lineHeight)
     const target = Math.max(0, (line - 1) * lineHeight)
-    if (container.scrollTop !== target) {
+    if (scrollRef.current !== target) {
+      scrollRef.current = target
       container.scrollTop = target
     }
-  }, [currentIndex, position])
+  }, [currentIndex])
 
   const classNames = [
     styles.display,

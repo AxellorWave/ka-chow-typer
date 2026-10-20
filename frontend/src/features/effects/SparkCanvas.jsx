@@ -6,6 +6,7 @@ import styles from './SparkCanvas.module.css'
 const MAX_PARTICLES = 160
 const SPARKS_PER_TIER = { 1: 0, 2: 2, 3: 4, 5: 7 }
 const GRAVITY = 0.12
+const MEASURE_INTERVAL_MS = 300
 const COLOR_TOKENS = ['--flame-core', '--flame-outer', '--color-accent']
 
 function readColors(node) {
@@ -25,8 +26,11 @@ export default function SparkCanvas({ tracker, anchorSelector }) {
     let frame = 0
     let pending = 0
     let ratio = 1
+    let origin = null
+    let measuredAt = -Infinity
 
     const resize = () => {
+      origin = null
       ratio = window.devicePixelRatio || 1
       canvas.width = host.clientWidth * ratio
       canvas.height = host.clientHeight * ratio
@@ -35,15 +39,26 @@ export default function SparkCanvas({ tracker, anchorSelector }) {
     const observer = new ResizeObserver(resize)
     observer.observe(host)
 
-    const spawn = () => {
+    const measure = (now) => {
+      if (origin && now - measuredAt < MEASURE_INTERVAL_MS) return origin
       const anchor = host.querySelector(anchorSelector)
-      const count = pending
-      pending = 0
-      if (!anchor) return
+      if (!anchor) return null
       const hostRect = host.getBoundingClientRect()
       const rect = anchor.getBoundingClientRect()
-      const x = rect.left - hostRect.left + rect.width * 0.12
-      const y = rect.top - hostRect.top + rect.height * 0.7
+      origin = {
+        x: rect.left - hostRect.left + rect.width * 0.12,
+        y: rect.top - hostRect.top + rect.height * 0.7,
+      }
+      measuredAt = now
+      return origin
+    }
+
+    const spawn = (now) => {
+      const count = pending
+      pending = 0
+      const point = measure(now)
+      if (!point) return
+      const { x, y } = point
       for (let index = 0; index < count && particles.length < MAX_PARTICLES; index += 1) {
         const maxLife = 22 + Math.random() * 18
         particles.push({
@@ -59,8 +74,8 @@ export default function SparkCanvas({ tracker, anchorSelector }) {
       }
     }
 
-    const draw = () => {
-      if (pending > 0) spawn()
+    const draw = (now) => {
+      if (pending > 0) spawn(now)
       context.setTransform(ratio, 0, 0, ratio, 0, 0)
       context.clearRect(0, 0, canvas.width, canvas.height)
       for (let index = particles.length - 1; index >= 0; index -= 1) {
