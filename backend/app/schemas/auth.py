@@ -18,6 +18,15 @@ def nickname_field():
     )
 
 
+def new_password_field():
+    return fields.String(
+        required=True,
+        load_only=True,
+        error_messages=STRING_ERRORS,
+        validate=validate.Length(min=8, max=128, error="От {min} до {max} символов"),
+    )
+
+
 class NormalizeEmailMixin:
     @pre_load
     def normalize_email(self, data, **kwargs):
@@ -35,12 +44,7 @@ class RegisterSchema(NormalizeEmailMixin, Schema):
         error_messages=EMAIL_ERRORS,
         validate=validate.Length(max=255, error="Не длиннее {max} символов"),
     )
-    password = fields.String(
-        required=True,
-        load_only=True,
-        error_messages=STRING_ERRORS,
-        validate=validate.Length(min=8, max=128, error="От {min} до {max} символов"),
-    )
+    password = new_password_field()
     nickname = nickname_field()
 
 

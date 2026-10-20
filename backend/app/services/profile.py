@@ -4,10 +4,12 @@ from pathlib import Path
 from flask import current_app
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.errors import ApiError
 from app.extensions import db
 from app.models import User
+from app.services.clock import msk_now
 
 AVATAR_URL_PREFIX = "/api/uploads/avatars/"
 IMAGE_SIGNATURES = (
@@ -80,4 +82,20 @@ def remove_avatar(user):
     user.avatar_url = None
     db.session.commit()
     _remove_stored_avatar(previous)
+    return user
+
+
+def change_password(user, current_password, new_password):
+    if user.password_hash is not None and not (
+        current_password and check_password_hash(user.password_hash, current_password)
+    ):
+        raise ApiError(
+            400,
+            "invalid_password",
+            "Неверный текущий пароль",
+            {"current_password": ["Неверный текущий пароль"]},
+        )
+    user.password_hash = generate_password_hash(new_password)
+    user.password_changed_at = msk_now()
+    db.session.commit()
     return user
