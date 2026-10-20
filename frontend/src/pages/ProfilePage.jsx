@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { getMe } from '../api/auth.js'
 import { getSummary } from '../api/stats.js'
 import EmptyState from '../components/EmptyState.jsx'
 import QueryError from '../components/QueryError.jsx'
@@ -16,17 +15,12 @@ import styles from './ProfilePage.module.css'
 import KeyboardHeatmap from '../features/stats/KeyboardHeatmap.jsx'
 
 export default function ProfilePage() {
-  const sessionUser = useAuthStore((state) => state.user)
-  const { data: user } = useQuery({
-    queryKey: ['me'],
-    queryFn: getMe,
-    placeholderData: sessionUser,
-  })
+  const user = useAuthStore((state) => state.user)
   const summary = useQuery({ queryKey: ['stats', 'summary'], queryFn: getSummary })
 
   return (
     <div className={styles.page}>
-      <ProfileHeader user={user ?? sessionUser} />
+      <ProfileHeader user={user} />
       <PilotSection />
 
       {summary.isPending && <Skeleton height="96px" />}

@@ -8,7 +8,6 @@ function useProfileMutation(mutationFn) {
     mutationFn,
     onSuccess: (user) => {
       useAuthStore.setState({ user })
-      queryClient.setQueryData(['me'], user)
       queryClient.invalidateQueries({ queryKey: ['leaderboard'] })
       queryClient.invalidateQueries({ queryKey: ['daily'] })
     },
