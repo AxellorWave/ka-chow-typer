@@ -1,0 +1,953 @@
+openapi: 3.1.0
+info:
+  title: KaChowTyper API
+  version: 1.0.0
+  description: |
+    REST API тренажёра слепой печати KaChowTyper.
+
+    **Авторизация.** Access-токен живёт 30 минут и передаётся в заголовке `Authorization: Bearer <token>`.
+    Refresh-токен живёт 30 дней и лежит в httpOnly cookie `kachow_refresh` с путём `/api/auth`, браузер отправляет его сам.
+    Когда приходит `401 token_expired`, нужно вызвать `POST /api/auth/refresh` и повторить запрос.
+
+    **Время.** Дни, периоды лидербордов и стрик считаются по московскому времени.
+
+    **Ошибки** приходят в одном формате: `{"error": "<код>", "message": "<текст>"}`,
+    у `validation_error` есть ещё `fields` с ошибками по полям.
+servers:
+  - url: https://kachowtyper.ru
+    description: Прод
+  - url: http://localhost:5000
+    description: Локальная разработка
+tags:
+  - name: Авторизация
+  - name: Тексты
+  - name: Заезды
+  - name: Статистика
+  - name: Лидерборды
+  - name: Карьера
+  - name: Призрак
+  - name: Заезд дня
+  - name: Достижения
+  - name: Гараж
+  - name: Профиль
+  - name: Служебное
+
+paths:
+  /api/health:
+    get:
+      tags: [Служебное]
+      summary: Проверка, что сервис жив
+      security: []
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            application/json:
+              example: {service: kachowtyper, status: ok}
+
+  /api/auth/register:
+    post:
+      tags: [Авторизация]
+      summary: Регистрация по почте
+      description: Ставит cookie `kachow_refresh`. Email приводится к нижнему регистру.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nickname]
+              properties:
+                email: {type: string, format: email, example: mcqueen@rust-eze.com}
+                password: {type: string, minLength: 8, maxLength: 128, example: kachow-95}
+                nickname: {$ref: '#/components/schemas/Nickname'}
+      responses:
+        '201':
+          description: Аккаунт создан
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/RefreshCookie'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResponse'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '409':
+          description: '`email_taken` или `nickname_taken`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: email_taken, message: Этот email уже зарегистрирован}
+
+  /api/auth/login:
+    post:
+      tags: [Авторизация]
+      summary: Вход по почте и паролю
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: {type: string, format: email, example: mcqueen@rust-eze.com}
+                password: {type: string, example: kachow-95}
+      responses:
+        '200':
+          description: Вход выполнен
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/RefreshCookie'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResponse'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401':
+          description: '`invalid_credentials`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: invalid_credentials, message: Неверный email или пароль}
+
+  /api/auth/refresh:
+    post:
+      tags: [Авторизация]
+      summary: Новый access-токен по refresh-cookie
+      security:
+        - refreshCookie: []
+      responses:
+        '200':
+          description: Новый токен и пользователь
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/auth/logout:
+    post:
+      tags: [Авторизация]
+      summary: Выход, cookie удаляется
+      security: []
+      responses:
+        '200':
+          description: Готово
+          content:
+            application/json:
+              example: {status: ok}
+
+  /api/auth/me:
+    get:
+      tags: [Авторизация]
+      summary: Текущий пользователь
+      responses:
+        '200':
+          description: Пользователь
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: {$ref: '#/components/schemas/User'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/auth/{provider}/start:
+    get:
+      tags: [Авторизация]
+      summary: Начать вход через VK ID или Яндекс ID
+      description: Редирект на страницу провайдера (OAuth 2.0 с PKCE). Открывается в браузере, не через fetch.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Provider'
+      responses:
+        '302':
+          description: Редирект к провайдеру или на `/oauth/callback?error=provider_unavailable`
+
+  /api/auth/{provider}/callback:
+    get:
+      tags: [Авторизация]
+      summary: Возврат от провайдера
+      description: |
+        При успехе ставит cookie `kachow_refresh` и редиректит на `/oauth/callback` фронтенда,
+        фронтенд делает `POST /api/auth/refresh`. При ошибке редирект на `/oauth/callback?error=<код>`:
+        `access_denied`, `invalid_state`, `oauth_failed`, `provider_unavailable`.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Provider'
+        - {name: code, in: query, schema: {type: string}}
+        - {name: state, in: query, schema: {type: string}}
+      responses:
+        '302':
+          description: Редирект на фронтенд
+
+  /api/texts:
+    get:
+      tags: [Тексты]
+      summary: Текст для заезда
+      description: |
+        Доступно гостю. Режимы и сложности открываются с уровнем: закрытые дают `403 mode_locked` или `403 difficulty_locked`.
+        С `track_id` текст берётся по параметрам трассы, остальные параметры игнорируются.
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - {name: mode, in: query, schema: {$ref: '#/components/schemas/Mode', default: words}}
+        - {name: lang, in: query, schema: {$ref: '#/components/schemas/Lang'}, description: 'По умолчанию первый язык режима'}
+        - {name: difficulty, in: query, schema: {type: integer, minimum: 1, maximum: 5, default: 1}}
+        - {name: length, in: query, schema: {type: integer, minimum: 1}, description: 'Число слов или предложений; не для всех режимов'}
+        - {name: track_id, in: query, schema: {type: integer}}
+      responses:
+        '200':
+          description: Текст
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Text'}
+              example:
+                mode: words
+                lang: ru
+                difficulty: 1
+                text_id: null
+                text: он стоп до стал виду нем ими вдруг просто дочь путь ту богу ночи воды
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '403': {$ref: '#/components/responses/Locked'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /api/texts/pitstop:
+    get:
+      tags: [Тексты]
+      summary: Пит-стоп — тренировка слабых клавиш
+      description: |
+        Текст из слов, где чаще встречаются слабые клавиши и биграммы пользователя, с дриллами вида `ож ож ож` каждые 6 слов.
+        Длина рассчитана на 45 секунд печати по среднему CPM. `fallback: true` — статистики по языку ещё нет, текст обычный.
+        Результат сохраняется обычным `POST /api/runs` с `mode: words`, `difficulty: 1`.
+      parameters:
+        - {name: lang, in: query, schema: {type: string, enum: [ru, en], default: ru}}
+      responses:
+        '200':
+          description: Текст и цели тренировки
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Text'
+                  - type: object
+                    properties:
+                      focus:
+                        type: object
+                        properties:
+                          keys: {type: array, items: {$ref: '#/components/schemas/KeyStat'}}
+                          bigrams: {type: array, items: {$ref: '#/components/schemas/BigramStat'}}
+                      fallback: {type: boolean}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/runs:
+    post:
+      tags: [Заезды]
+      summary: Сохранить заезд
+      description: |
+        Метрики (`duration_ms`, CPM, WPM, точность, максимальное комбо) сервер пересчитывает по `keystrokes`,
+        присланные `typed_chars`, `correct_chars` и `errors` должны с ними сходиться, иначе `400 run_mismatch`.
+        В рейтинги идут только завершённые заезды — когда напечатан весь текст.
+
+        Повтор с тем же `client_run_id` не создаёт дубль: вернётся `200` с результатом уже сохранённого заезда.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RunCreate'}
+            example:
+              mode: words
+              lang: ru
+              difficulty: 1
+              text: он стоп
+              typed_chars: 8
+              correct_chars: 7
+              errors: 1
+              score: 70
+              keystrokes: [['о', 0, true], ['н', 180, true], [' ', 340, true], ['с', 520, true], ['n', 700, false], ['т', 910, true], ['о', 1080, true], ['п', 1250, true]]
+              client_run_id: 7f9c2a1e-run
+      responses:
+        '201':
+          description: Заезд сохранён
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RunResult'}
+        '200':
+          description: Заезд с этим `client_run_id` уже был сохранён
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RunResult'}
+        '400':
+          description: '`validation_error`, `run_mismatch`, `track_mismatch`, `daily_closed`, `daily_mismatch`, `ghost_mismatch`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Locked'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /api/runs/me:
+    get:
+      tags: [Заезды]
+      summary: История заездов, новые сверху
+      parameters:
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 20}}
+        - {name: offset, in: query, schema: {type: integer, minimum: 0, default: 0}}
+      responses:
+        '200':
+          description: Страница истории
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: {type: array, items: {$ref: '#/components/schemas/Run'}}
+                  total: {type: integer, example: 42}
+                  limit: {type: integer, example: 20}
+                  offset: {type: integer, example: 0}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/stats/summary:
+    get:
+      tags: [Статистика]
+      summary: Общие цифры по всем заездам
+      responses:
+        '200':
+          description: Сводка; у нового пользователя нули
+          content:
+            application/json:
+              example:
+                runs: 4
+                active_days: 3
+                total_duration_ms: 15240
+                total_chars: 68
+                total_typed: 75
+                total_errors: 7
+                total_score: 680
+                best_wpm: 100.0
+                avg_wpm: 62.8
+                best_cpm: 500.0
+                avg_cpm: 314.2
+                avg_accuracy: 91.1
+                max_combo: 17
+                last_run_at: '2026-10-19T14:23:19+00:00'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/stats/progress:
+    get:
+      tags: [Статистика]
+      summary: Динамика по дням
+      description: Возвращает каждый день диапазона; у дней без заездов `runs` равен 0, а средние — `null`.
+      parameters:
+        - {name: range, in: query, schema: {type: string, enum: [7d, 30d, 90d], default: 7d}}
+      responses:
+        '200':
+          description: Точки графика
+          content:
+            application/json:
+              example:
+                range_days: 7
+                from: '2026-10-14'
+                to: '2026-10-20'
+                points:
+                  - {date: '2026-10-19', runs: 0, avg_wpm: null, best_wpm: null, avg_accuracy: null, errors: 0, duration_ms: 0}
+                  - {date: '2026-10-20', runs: 2, avg_wpm: 67.8, best_wpm: 100.0, avg_accuracy: 92.5, errors: 3, duration_ms: 7790}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/stats/keys:
+    get:
+      tags: [Статистика]
+      summary: Статистика по клавишам и биграммам
+      description: |
+        `keys` — все клавиши для тепловой карты. `weakest_keys` и `weakest_bigrams` — до 10 штук с минимум `min_presses` нажатиями,
+        у которых есть ошибки или задержка в 1.2 раза выше средней. Пробелы и переводы строк в слабые не входят.
+      responses:
+        '200':
+          description: Статистика клавиш
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys: {type: array, items: {$ref: '#/components/schemas/KeyStat'}}
+                  weakest_keys: {type: array, items: {$ref: '#/components/schemas/KeyStat'}}
+                  weakest_bigrams: {type: array, items: {$ref: '#/components/schemas/BigramStat'}}
+                  min_presses: {type: integer, example: 5}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/leaderboard:
+    get:
+      tags: [Лидерборды]
+      summary: Глобальный лидерборд
+      description: |
+        Доступно гостю. С токеном в ответе есть `me` — место текущего пользователя, даже за пределами `limit`.
+        `accuracy` считается по заездам от 100 верных символов. При равенстве выше тот, кто показал результат раньше.
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - {name: metric, in: query, schema: {type: string, enum: [wpm, accuracy, xp], default: wpm}}
+        - {name: period, in: query, schema: {type: string, enum: [day, week, all], default: all}}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}
+      responses:
+        '200':
+          description: Таблица
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Leaderboard'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+
+  /api/tracks:
+    get:
+      tags: [Карьера]
+      summary: Трассы карьеры с прогрессом
+      description: |
+        Доступно гостю. Первая трасса открыта всегда, следующая — с бронзой на предыдущей и уровнем от `min_level`.
+        Кубок засчитывается, если выполнены и `wpm`, и `accuracy` порога; кубки идут по порядку.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Трассы
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: {type: array, items: {$ref: '#/components/schemas/Track'}}
+                  total_cups: {type: integer, example: 5}
+                  max_cups: {type: integer, example: 30}
+
+  /api/ghost:
+    get:
+      tags: [Призрак]
+      summary: Призрак — лучший заезд на тексте или трассе
+      description: |
+        Передаётся ровно один из `text_id` и `track_id`. `who=self` — свой лучший заезд, `top` — лучший среди всех.
+        `timeline` — точки `[t_ms, progress]` до 200 штук, `progress` от 0 до 1.
+        Чтобы засчитать обгон, передай `ghost_run_id` в `POST /api/runs`.
+      parameters:
+        - {name: text_id, in: query, schema: {type: integer}}
+        - {name: track_id, in: query, schema: {type: integer}}
+        - {name: who, in: query, schema: {type: string, enum: [self, top], default: self}}
+      responses:
+        '200':
+          description: Призрак
+          content:
+            application/json:
+              example:
+                run_id: 512
+                who: top
+                user: {nickname: Молния_95, car_config: {hero: hero_mcqueen, color: color_native}}
+                wpm: 74.2
+                duration_ms: 48210
+                timeline: [[0, 0.0], [350, 0.01], [720, 0.02], [48210, 1.0]]
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /api/daily:
+    get:
+      tags: [Заезд дня]
+      summary: Заезд дня
+      description: |
+        Доступно гостю. Текст один на всех: три предложения на русском сложности 2, выбираются по дате МСК
+        и фиксируются при первом запросе за день. Сохраняется обычным `POST /api/runs` с `daily_date`.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Заезд дня
+          content:
+            application/json:
+              example:
+                date: '2026-10-20'
+                ends_at: '2026-10-21T00:00:00+03:00'
+                text: {text_id: 10561, mode: sentences, lang: ru, difficulty: 2, text: Пилот плавно вошёл в поворот и прибавил скорость.}
+                leader: {nickname: Молния_95, wpm: 128.0}
+                me: {attempts: 2, best_wpm: 74.2, best_accuracy: 97.5}
+        '503':
+          description: '`daily_unavailable` — в базе нет предложений, не выполнен `flask seed`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /api/daily/leaderboard:
+    get:
+      tags: [Заезд дня]
+      summary: Лидерборд заезда дня
+      description: В зачёт идёт лучшая попытка дня по WPM. Формат как у `/api/leaderboard`.
+      security:
+        - {}
+        - bearerAuth: []
+      parameters:
+        - {name: date, in: query, schema: {type: string, format: date}, description: 'По умолчанию сегодня по МСК'}
+        - {name: limit, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 50}}
+      responses:
+        '200':
+          description: Таблица
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Leaderboard'}
+        '404': {$ref: '#/components/responses/NotFound'}
+
+  /api/achievements:
+    get:
+      tags: [Достижения]
+      summary: Все ачивки с прогрессом пользователя
+      responses:
+        '200':
+          description: Ачивки
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: {type: array, items: {$ref: '#/components/schemas/Achievement'}}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/garage:
+    get:
+      tags: [Гараж]
+      summary: Детали и текущая машинка
+      description: Деталь открыта, если `unlock.type` — `default`, если уровень не ниже `value` (`level`) или есть ачивка `value` (`achievement`).
+      responses:
+        '200':
+          description: Гараж
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Garage'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+    put:
+      tags: [Гараж]
+      summary: Поменять детали
+      description: Можно передать часть слотов, остальные не меняются. Сохранённая машинка приходит в `/api/auth/me` и лидербордах.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CarConfig'}
+            example: {hero: hero_storm, wheels: wheels_neon}
+      responses:
+        '200':
+          description: Новая машинка
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  config: {$ref: '#/components/schemas/CarConfig'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Locked'}
+
+  /api/profile:
+    patch:
+      tags: [Профиль]
+      summary: Сменить ник
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nickname]
+              properties:
+                nickname: {$ref: '#/components/schemas/Nickname'}
+      responses:
+        '200': {$ref: '#/components/responses/UserResponse'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '409':
+          description: '`nickname_taken`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+
+  /api/profile/avatar:
+    post:
+      tags: [Профиль]
+      summary: Загрузить фото
+      description: PNG, JPEG или WebP до 512 КБ, формат определяется по содержимому. Фронтенд заранее обрезает фото до квадрата 256×256.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: {type: string, format: binary}
+      responses:
+        '200': {$ref: '#/components/responses/UserResponse'}
+        '400': {$ref: '#/components/responses/ValidationError'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '413':
+          description: '`file_too_large` — фото больше 512 КБ или запрос больше 2 МБ'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+        '415':
+          description: '`unsupported_image` — не PNG, JPEG или WebP'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+    delete:
+      tags: [Профиль]
+      summary: Удалить фото
+      responses:
+        '200': {$ref: '#/components/responses/UserResponse'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
+  /api/uploads/avatars/{name}:
+    get:
+      tags: [Профиль]
+      summary: Файл загруженного фото
+      security: []
+      parameters:
+        - {name: name, in: path, required: true, schema: {type: string}, example: 14-6d5681e3c5e1bec1.webp}
+      responses:
+        '200':
+          description: 'Изображение, `Cache-Control: max-age=31536000`'
+          content:
+            image/webp: {}
+            image/png: {}
+            image/jpeg: {}
+        '404':
+          description: Файла нет
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access-токен из `register`, `login` или `refresh`
+    refreshCookie:
+      type: apiKey
+      in: cookie
+      name: kachow_refresh
+
+  headers:
+    RefreshCookie:
+      description: '`kachow_refresh=<jwt>; HttpOnly; Path=/api/auth; SameSite=Lax; Secure` (в проде)'
+      schema: {type: string}
+
+  parameters:
+    Provider:
+      name: provider
+      in: path
+      required: true
+      schema: {type: string, enum: [vk, yandex]}
+
+  responses:
+    ValidationError:
+      description: '`validation_error` — ошибки по полям в `fields`'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example:
+            error: validation_error
+            message: Проверьте введённые данные
+            fields: {password: [От 8 до 128 символов]}
+    Unauthorized:
+      description: '`unauthorized` (нет токена), `invalid_token` или `token_expired` (пора делать refresh)'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example: {error: token_expired, message: Срок действия токена истёк}
+    Locked:
+      description: '`mode_locked`, `difficulty_locked`, `track_locked` или `item_locked`; в `message` сказано, что нужно для открытия'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+          example: {error: track_locked, message: Сначала возьмите бронзу на трассе «Радиатор-Спрингс»}
+    NotFound:
+      description: '`text_not_found`, `texts_not_found`, `track_not_found`, `ghost_not_found` или `daily_not_found`'
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    UserResponse:
+      description: Обновлённый пользователь
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              user: {$ref: '#/components/schemas/User'}
+
+  schemas:
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error: {type: string, example: validation_error}
+        message: {type: string}
+        fields:
+          type: object
+          additionalProperties: {type: array, items: {type: string}}
+
+    Mode:
+      type: string
+      enum: [words, sentences, quotes, code, symbols]
+      description: Слова, предложения, цитаты из «Тачек», код, символы
+
+    Lang:
+      type: string
+      enum: [ru, en, python, js, html_css]
+
+    Nickname:
+      type: string
+      minLength: 3
+      maxLength: 32
+      pattern: '^[A-Za-zА-Яа-яЁё0-9_\-]+$'
+      example: Молния_95
+
+    CarConfig:
+      type: object
+      properties:
+        hero: {type: string, example: hero_mcqueen}
+        color: {type: string, example: color_native}
+        decal: {type: string, example: decal_bolt}
+        wheels: {type: string, example: wheels_stock}
+        spoiler: {type: string, example: spoiler_none}
+
+    User:
+      type: object
+      properties:
+        id: {type: integer, example: 1}
+        email: {type: [string, 'null'], example: mcqueen@rust-eze.com}
+        nickname: {type: string, example: Молния_95}
+        avatar_url: {type: [string, 'null'], example: null}
+        xp: {type: integer, example: 1240}
+        level: {type: integer, example: 4}
+        xp_to_next: {type: integer, example: 310}
+        level_xp: {type: integer, description: XP начала текущего уровня, example: 1100}
+        next_level_xp: {type: integer, description: XP начала следующего уровня, example: 1550}
+        unlocked_modes: {type: array, items: {$ref: '#/components/schemas/Mode'}, example: [words, sentences]}
+        max_difficulty: {type: integer, example: 3}
+        streak_current: {type: integer, example: 3}
+        streak_best: {type: integer, example: 7}
+        car_config: {$ref: '#/components/schemas/CarConfig'}
+        has_password: {type: boolean, example: true}
+        providers: {type: array, items: {type: string, enum: [vk, yandex]}, example: []}
+        created_at: {type: string, format: date-time}
+
+    AuthResponse:
+      type: object
+      properties:
+        access_token: {type: string, example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...}
+        user: {$ref: '#/components/schemas/User'}
+
+    Text:
+      type: object
+      properties:
+        mode: {$ref: '#/components/schemas/Mode'}
+        lang: {$ref: '#/components/schemas/Lang'}
+        difficulty: {type: integer, minimum: 1, maximum: 5}
+        text_id: {type: [integer, 'null'], description: '`null` для сгенерированных из словаря текстов'}
+        text: {type: string}
+
+    Keystroke:
+      type: array
+      description: '`[символ, мс от начала, верно]`; четвёртый элемент `true` — нажатие засчитано автоматически (автоотступ в режиме «Код»)'
+      minItems: 3
+      maxItems: 4
+      prefixItems:
+        - {type: string, maxLength: 8}
+        - {type: number, minimum: 0}
+        - {type: boolean}
+        - {type: boolean, const: true}
+      example: ['о', 180, true]
+
+    RunCreate:
+      type: object
+      required: [mode, lang, difficulty, text, typed_chars, correct_chars, errors, score, keystrokes]
+      properties:
+        mode: {$ref: '#/components/schemas/Mode'}
+        lang: {$ref: '#/components/schemas/Lang'}
+        difficulty: {type: integer, minimum: 1, maximum: 5}
+        text: {type: string, maxLength: 20000}
+        text_id: {type: [integer, 'null']}
+        track_id: {type: [integer, 'null'], description: Заезд по трассе карьеры}
+        daily_date: {type: [string, 'null'], format: date, description: Заезд дня; только сегодняшняя дата МСК}
+        ghost_run_id: {type: [integer, 'null'], description: Призрак, с которым сравнивается заезд}
+        client_run_id: {type: [string, 'null'], minLength: 8, maxLength: 64, description: Ключ идемпотентности}
+        typed_chars: {type: integer, minimum: 0}
+        correct_chars: {type: integer, minimum: 0}
+        errors: {type: integer, minimum: 0}
+        score: {type: integer, minimum: 0, description: Не больше символов × 10 × комбо ×5 × бонус ×2}
+        keystrokes: {type: array, maxItems: 50000, items: {$ref: '#/components/schemas/Keystroke'}}
+
+    NewAchievement:
+      type: object
+      properties:
+        code: {type: string, example: ka_chow}
+        title: {type: string, example: Ka-chow!}
+        description: {type: string, example: Проехать первый заезд}
+        icon: {type: string, example: ⚡}
+
+    RunResult:
+      type: object
+      properties:
+        run_id: {type: integer, example: 10073}
+        xp_earned: {type: integer, example: 114}
+        xp: {type: integer, example: 114}
+        level: {type: integer, example: 1}
+        level_up: {type: boolean, example: false}
+        levels_gained: {type: integer, example: 0}
+        xp_to_next: {type: integer, example: 169}
+        level_xp: {type: integer, example: 0}
+        next_level_xp: {type: integer, example: 283}
+        new_achievements: {type: array, items: {$ref: '#/components/schemas/NewAchievement'}}
+        cups:
+          type: [object, 'null']
+          description: Только для заездов по трассе
+          properties:
+            track_id: {type: integer, example: 1}
+            cups: {type: integer, minimum: 0, maximum: 3, example: 2}
+            new_cups: {type: integer, example: 1}
+        ghost_beaten: {type: boolean, example: false}
+
+    Run:
+      type: object
+      properties:
+        id: {type: integer, example: 10073}
+        mode: {$ref: '#/components/schemas/Mode'}
+        lang: {$ref: '#/components/schemas/Lang'}
+        difficulty: {type: integer, example: 1}
+        text_id: {type: [integer, 'null']}
+        track_id: {type: [integer, 'null']}
+        daily_date: {type: [string, 'null'], format: date}
+        text: {type: string}
+        duration_ms: {type: integer, example: 16950}
+        typed_chars: {type: integer, example: 114}
+        correct_chars: {type: integer, example: 114}
+        errors: {type: integer, example: 0}
+        cpm: {type: number, example: 403.5}
+        wpm: {type: number, example: 80.7}
+        accuracy: {type: number, example: 100.0}
+        max_combo: {type: integer, example: 114}
+        score: {type: integer, example: 1140}
+        xp_earned: {type: integer, example: 114}
+        created_at: {type: string, format: date-time}
+
+    KeyStat:
+      type: object
+      properties:
+        key: {type: string, example: ж}
+        presses: {type: integer, example: 43}
+        errors: {type: integer, example: 16}
+        error_rate: {type: number, description: Процент ошибок, example: 37.2}
+        avg_latency_ms: {type: number, description: Средняя пауза перед нажатием, example: 520.0}
+
+    BigramStat:
+      type: object
+      properties:
+        bigram: {type: string, example: ож}
+        presses: {type: integer, example: 14}
+        errors: {type: integer, example: 5}
+        error_rate: {type: number, example: 35.7}
+        avg_latency_ms: {type: number, example: 540.0}
+
+    LeaderboardRow:
+      type: object
+      properties:
+        position: {type: integer, example: 1}
+        user_id: {type: integer, example: 14}
+        nickname: {type: string, example: Молния_95}
+        avatar_url: {type: [string, 'null']}
+        level: {type: integer, example: 10}
+        car_config: {$ref: '#/components/schemas/CarConfig'}
+        value: {type: number, description: Значение метрики, example: 54.5}
+        wpm: {type: [number, 'null'], example: 54.5}
+        accuracy: {type: [number, 'null'], example: 100.0}
+        achieved_at: {type: string, format: date-time}
+
+    Leaderboard:
+      type: object
+      properties:
+        metric: {type: string, example: wpm}
+        period: {type: string, example: all}
+        limit: {type: integer, example: 50}
+        since: {type: [string, 'null'], format: date-time}
+        total: {type: integer, example: 1}
+        items: {type: array, items: {$ref: '#/components/schemas/LeaderboardRow'}}
+        me:
+          oneOf:
+            - $ref: '#/components/schemas/LeaderboardRow'
+            - type: 'null'
+
+    Track:
+      type: object
+      properties:
+        id: {type: integer, example: 1}
+        code: {type: string, example: radiator_springs}
+        title: {type: string, example: Радиатор-Спрингс}
+        description: {type: string, example: Тихий городок на шоссе 66. Самое место для первых кругов.}
+        sort_order: {type: integer, example: 1}
+        mode: {$ref: '#/components/schemas/Mode'}
+        lang: {$ref: '#/components/schemas/Lang'}
+        difficulty: {type: integer, example: 1}
+        min_level: {type: integer, example: 1}
+        cup_requirements:
+          type: array
+          description: Бронза, серебро, золото
+          items:
+            type: object
+            properties:
+              wpm: {type: number}
+              accuracy: {type: number}
+          example: [{wpm: 15, accuracy: 85}, {wpm: 25, accuracy: 90}, {wpm: 35, accuracy: 95}]
+        cups: {type: integer, minimum: 0, maximum: 3, example: 2}
+        best_wpm: {type: [number, 'null'], example: 31.5}
+        unlocked: {type: boolean, example: true}
+        lock_reason: {type: [string, 'null'], enum: [previous, level, null]}
+
+    Achievement:
+      type: object
+      properties:
+        code: {type: string, example: cpm_200}
+        title: {type: string, example: Разгон}
+        description: {type: string, example: Набрать 200 символов в минуту за один заезд}
+        icon: {type: [string, 'null'], example: 🚀}
+        unlocked: {type: boolean, example: false}
+        unlocked_at: {type: [string, 'null'], format: date-time}
+        progress:
+          type: object
+          properties:
+            current: {type: integer, example: 120}
+            target: {type: integer, example: 200}
+
+    Garage:
+      type: object
+      properties:
+        config: {$ref: '#/components/schemas/CarConfig'}
+        slots:
+          type: array
+          description: Слоты по порядку hero, color, decal, wheels, spoiler
+          items:
+            type: object
+            properties:
+              slot: {type: string, enum: [hero, color, decal, wheels, spoiler]}
+              items:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    code: {type: string, example: hero_mater}
+                    title: {type: string, example: Мэтр}
+                    asset: {type: [string, 'null'], example: mater}
+                    unlocked: {type: boolean, example: false}
+                    unlock:
+                      type: object
+                      properties:
+                        type: {type: string, enum: [default, level, achievement]}
+                        value: {type: [string, integer, 'null'], example: 3}
+                        label: {type: string, example: Уровень 3}
