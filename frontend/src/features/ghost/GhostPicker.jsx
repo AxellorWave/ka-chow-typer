@@ -6,14 +6,13 @@ const OPTIONS = [
   { value: 'top', label: 'Лидер' },
 ]
 
-export default function GhostPicker({ value, onChange, disabledHint }) {
-  const disabled = Boolean(disabledHint)
+export default function GhostPicker({ value, onChange }) {
   return (
-    <fieldset className={styles.group} disabled={disabled}>
+    <fieldset className={styles.group}>
       <legend className={styles.legend}>Призрак</legend>
       <div className={styles.options}>
         {OPTIONS.map((option) => {
-          const active = !disabled && value === option.value
+          const active = value === option.value
           return (
             <button
               key={option.value}
@@ -28,7 +27,6 @@ export default function GhostPicker({ value, onChange, disabledHint }) {
           )
         })}
       </div>
-      {disabledHint && <p className={styles.hint}>{disabledHint}</p>}
     </fieldset>
   )
 }

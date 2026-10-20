@@ -25,7 +25,6 @@ function FreeTrain({ user }) {
   const storedSetup = useTrainSetup()
   const setup = normalizeSetup(storedSetup, user)
   const flow = useRunFlow(setup)
-  const ghostWho = user && setup.mode !== 'words' ? storedSetup.ghost : 'off'
 
   if (flow.phase === 'run' && flow.run) {
     return (
@@ -34,7 +33,6 @@ function FreeTrain({ user }) {
         run={flow.run}
         onFinish={flow.finish}
         onExit={flow.backToSetup}
-        ghostWho={ghostWho}
       />
     )
   }
@@ -43,7 +41,6 @@ function FreeTrain({ user }) {
     return (
       <ResultScreen
         payload={flow.result}
-        ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
         onChangeSetup={flow.backToSetup}
@@ -55,7 +52,6 @@ function FreeTrain({ user }) {
     <RunSetup
       user={user}
       setup={setup}
-      ghost={storedSetup.ghost}
       onChange={storedSetup.update}
       onStart={flow.start}
       loading={flow.loading}
@@ -144,6 +140,7 @@ function DailyRun({ user, daily }) {
   const setup = useMemo(() => ({ dailyDate: daily.date }), [daily.date])
   const loadText = useMemo(() => async () => daily.text, [daily.text])
   const flow = useRunFlow(setup, loadText)
+  const ghostWho = useTrainSetup((state) => state.ghost)
   const startedRef = useRef(false)
   const { start } = flow
 
@@ -163,7 +160,7 @@ function DailyRun({ user, daily }) {
         onFinish={flow.finish}
         onExit={toDaily}
         exitLabel="К заезду дня"
-        ghostWho="self"
+        ghostWho={ghostWho}
       />
     )
   }
