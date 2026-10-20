@@ -3,6 +3,7 @@ from flask import Blueprint
 from app.api.achievements import achievements_bp
 from app.api.auth import auth_bp
 from app.api.daily import daily_bp
+from app.api.ghost import ghost_bp
 from app.api.health import health_bp
 from app.api.leaderboard import leaderboard_bp
 from app.api.oauth import oauth_bp
@@ -22,3 +23,4 @@ api_bp.register_blueprint(leaderboard_bp)
 api_bp.register_blueprint(achievements_bp)
 api_bp.register_blueprint(tracks_bp)
 api_bp.register_blueprint(daily_bp)
+api_bp.register_blueprint(ghost_bp)

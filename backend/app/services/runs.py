@@ -8,6 +8,7 @@ from app.extensions import db
 from app.models import BigramStat, KeyStat, Run, Text, Track, UserTrack
 from app.services.achievements import check_achievements
 from app.services.daily import validate_daily_run
+from app.services.ghost import check_ghost_beaten
 from app.services.leveling import add_xp, run_xp, xp_for_level
 from app.services.streaks import update_streak
 from app.services.texts import check_access
@@ -25,6 +26,7 @@ def save_run(user, data):
     elif data["track_id"] is None:
         check_access(user, data["mode"], data["difficulty"])
     validate_references(user, data)
+    ghost_beaten = check_ghost_beaten(data, data.pop("ghost_run_id"))
     aggregates = aggregate_keystrokes(data["text"], data["keystrokes"])
     validate_totals(data, aggregates)
 
@@ -46,6 +48,8 @@ def save_run(user, data):
     upsert_stats(BigramStat, BigramStat.bigram, user.id, aggregates.bigrams)
     cups = update_cups(user, run)
     update_streak(user)
+    if ghost_beaten:
+        user.ghosts_beaten += 1
     new_achievements = check_achievements(user, run)
     db.session.commit()
 
@@ -61,6 +65,7 @@ def save_run(user, data):
         "next_level_xp": xp_for_level(progress.level + 1),
         "new_achievements": new_achievements,
         "cups": cups,
+        "ghost_beaten": ghost_beaten,
     }
 
 
