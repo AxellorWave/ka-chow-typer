@@ -224,3 +224,39 @@ Access-токен живёт 30 минут и передаётся в загол
 ```
 
 Для `xp` поля `wpm` и `accuracy` равны `null`.
+
+### Карьера
+
+`GET /api/tracks` — все трассы по `sort_order` с прогрессом пользователя. Доступно и гостю: у него `cups: 0`, `best_wpm: null`, открыта только первая трасса.
+
+```json
+{
+  "items": [
+    {
+      "id": 1, "code": "radiator_springs", "title": "Радиатор-Спрингс", "description": "...",
+      "sort_order": 1, "mode": "words", "lang": "ru", "difficulty": 1, "min_level": 1,
+      "cup_requirements": [{"wpm": 15, "accuracy": 85}, {"wpm": 25, "accuracy": 90}, {"wpm": 35, "accuracy": 95}],
+      "cups": 2, "best_wpm": 31.5, "unlocked": true, "lock_reason": null
+    }
+  ],
+  "total_cups": 5, "max_cups": 30
+}
+```
+
+- Первая трасса открыта всегда. Следующая открывается, когда на предыдущей есть хотя бы бронза и уровень не ниже `min_level`.
+- `lock_reason`: `null`, `"previous"` (нет бронзы на предыдущей трассе) или `"level"` (уровень ниже `min_level`).
+- `cups` — лучший результат из `user_tracks` (0–3), `best_wpm` — лучший WPM пользователя на этой трассе.
+- Кубок засчитывается, если в заезде выполнены и `wpm`, и `accuracy` порога; кубки идут по порядку: бронза, серебро, золото.
+
+Заезд по трассе:
+
+1. `GET /api/texts?track_id=<id>` — текст трассы. `mode`, `lang` и `difficulty` берутся из трассы, остальные параметры игнорируются. Вместо проверки режима и сложности по уровню проверяется, что трасса открыта.
+2. `POST /api/runs` с `track_id` и `mode`/`lang`/`difficulty` трассы. Поле `cups` ответа: `{"track_id": 1, "cups": 2, "new_cups": 1}`.
+
+| Ошибка | Когда |
+|---|---|
+| `404 track_not_found` | Трассы с таким `track_id` нет |
+| `403 track_locked` | Трасса закрыта; в `message` сказано, что нужно сделать |
+| `400 track_mismatch` | `mode`/`lang`/`difficulty` заезда не совпадают с трассой |
+
+За золото на всех трассах выдаётся ачивка «Кубок Поршня» (`piston_cup`).
