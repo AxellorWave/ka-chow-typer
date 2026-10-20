@@ -10,6 +10,7 @@ export function useRunFlow(setup, loadText = getText) {
   const [phase, setPhase] = useState('setup')
   const [run, setRun] = useState(null)
   const [result, setResult] = useState(null)
+  const [ghost, setGhost] = useState(null)
 
   const textMutation = useMutation({
     mutationFn: loadText,
@@ -28,8 +29,9 @@ export function useRunFlow(setup, loadText = getText) {
   const { mutate, isPending } = textMutation
   const start = useCallback(() => mutate(setup), [mutate, setup])
 
-  const finish = useCallback((payload) => {
+  const finish = useCallback((payload, finishGhost = null) => {
     setResult(payload)
+    setGhost(finishGhost)
     setPhase('result')
   }, [])
 
@@ -42,6 +44,7 @@ export function useRunFlow(setup, loadText = getText) {
     phase,
     run,
     result,
+    ghost,
     start,
     finish,
     backToSetup,

@@ -5,6 +5,7 @@ import { BONUS_DURATION_MS, TURBO_BONUS, getRandomBonusDelay } from '../game/bon
 import { useSettingsStore } from '../../store/settingsStore.js'
 import TextDisplay from '../typing/TextDisplay.jsx'
 import { useTypingEngine } from '../typing/useTypingEngine.js'
+import { useGhost } from '../ghost/useGhost.js'
 import Hud from './Hud.jsx'
 import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
@@ -21,7 +22,6 @@ const COUNTDOWN_FROM = 3
 const COUNTDOWN_STEP_MS = 700
 const GO_LABEL = 'Ka-chow!'
 const FINISH_DELAY_MS = 900
-
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -49,7 +49,13 @@ function useCountdown(active, round, onDone) {
   return count
 }
 
-export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Сменить режим' }) {
+export default function RunScreen({
+  run,
+  onFinish,
+  onExit,
+  exitLabel = 'Сменить режим',
+  ghostWho = 'off',
+}) {
   const [phase, setPhase] = useState('countdown')
   const [round, setRound] = useState(0)
   const tracker = useMemo(() => createScoreTracker(), [])
@@ -59,6 +65,7 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
   const bonusActive = bonusSeconds > 0
 
   const finishTimerRef = useRef(null)
+  const ghost = useGhost(run, ghostWho)
 
   const finish = useCallback(
     (result) => {
@@ -73,11 +80,12 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
         daily_date: run.daily_date ?? null,
         score,
         max_combo: maxCombo,
+        ...(ghost && { ghost_run_id: ghost.run_id }),
       }
       setPhase('finished')
-      finishTimerRef.current = setTimeout(() => onFinish(payload), FINISH_DELAY_MS)
+      finishTimerRef.current = setTimeout(() => onFinish(payload, ghost), FINISH_DELAY_MS)
     },
-    [onFinish, run, tracker],
+    [onFinish, run, tracker, ghost],
   )
 
   useEffect(() => () => clearTimeout(finishTimerRef.current), [])
@@ -217,7 +225,7 @@ export default function RunScreen({ run, onFinish, onExit, exitLabel = 'Смен
         </div>
       )}
 
-      <TrainTrack engine={engine} tracker={tracker} finished={phase === 'finished'} />
+      <TrainTrack engine={engine} tracker={tracker} finished={phase === 'finished'} ghost={ghost} />
 
       <div ref={errorFlashRef} className={styles.board}>
         <div className={phase === 'countdown' ? `${styles.text} ${styles.blurred}` : styles.text}>
