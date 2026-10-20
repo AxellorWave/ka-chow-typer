@@ -1,11 +1,11 @@
-from datetime import datetime, time, timedelta, timezone
+from datetime import datetime, time, timedelta
 
 from sqlalchemy import func, null, select
 
 from app.extensions import db
 from app.models import Run, User
+from app.services.clock import MSK
 
-MSK = timezone(timedelta(hours=3))
 PERIOD_DAYS = {"day": 1, "week": 7}
 MIN_ACCURACY_CHARS = 100
 
@@ -77,20 +77,21 @@ def _xp(filters, start):
     return totals, [totals.c.value.desc(), totals.c.achieved_at.asc()]
 
 
-def _ranked(metric, period):
-    start = period_start(period)
-    filters = [Run.created_at >= start] if start is not None else []
-    if metric == "xp":
-        source, order_by = _xp(filters, start)
-    elif metric == "accuracy":
-        source, order_by = _accuracy(filters)
-    else:
-        source, order_by = _wpm(filters)
-
+def _rank(source, order_by):
     return select(
         source,
         func.row_number().over(order_by=[*order_by, source.c.user_id]).label("position"),
     ).subquery()
+
+
+def _ranked(metric, period):
+    start = period_start(period)
+    filters = [Run.created_at >= start] if start is not None else []
+    if metric == "xp":
+        return _rank(*_xp(filters, start))
+    if metric == "accuracy":
+        return _rank(*_accuracy(filters))
+    return _rank(*_wpm(filters))
 
 
 def _rows(ranked, *conditions):
@@ -133,14 +134,30 @@ def _serialize(row):
     }
 
 
-def leaderboard(metric, period, limit, user_id=None):
-    ranked = _ranked(metric, period)
+def _board(ranked, limit, user_id):
     items = _rows(ranked, ranked.c.position <= limit)
     total = db.session.scalar(select(func.count()).select_from(ranked))
     me = None
     if user_id is not None:
         mine = _rows(ranked, ranked.c.user_id == user_id)
         me = mine[0] if mine else None
+    return items, total, me
+
+
+def daily_leaderboard(day, limit, user_id=None):
+    items, total, me = _board(_rank(*_wpm([Run.daily_date == day])), limit, user_id)
+    return {
+        "metric": "wpm",
+        "date": day.isoformat(),
+        "limit": limit,
+        "total": total,
+        "items": items,
+        "me": me,
+    }
+
+
+def leaderboard(metric, period, limit, user_id=None):
+    items, total, me = _board(_ranked(metric, period), limit, user_id)
     start = period_start(period)
     return {
         "metric": metric,
