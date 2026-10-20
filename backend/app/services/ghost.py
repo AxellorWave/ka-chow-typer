@@ -46,7 +46,7 @@ def build_timeline(run):
     length = len(run.text)
     points = [[0, 0.0]]
     correct = 0
-    for _, t_ms, ok in run.keystrokes:
+    for _, t_ms, ok, *_ in run.keystrokes:
         if ok:
             correct += 1
             points.append([round(t_ms), round(correct / length, 4)])

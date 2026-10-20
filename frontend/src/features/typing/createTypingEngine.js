@@ -1,11 +1,11 @@
 import { createStore } from 'zustand/vanilla'
 
 const INDENT_SIZE = 4
-const INDENT_CHARS = new Set([' ', '\t'])
 
 const initialState = () => ({
   position: 0,
   typed: 0,
+  pressed: 0,
   errors: 0,
   errorAt: null,
   startedAt: null,
@@ -17,13 +17,14 @@ const round1 = (value) => Math.round(value * 10) / 10
 
 export const normalizeText = (text) => text.replace(/\r\n?/g, '\n')
 
-export function computeMetrics({ correct, typed, errors, durationMs }) {
+export function computeMetrics({ pressed, errors, durationMs }) {
   const minutes = durationMs / 60_000
-  const cpm = minutes > 0 ? correct / minutes : 0
+  const cpm = minutes > 0 ? pressed / minutes : 0
+  const presses = pressed + errors
   return {
     cpm: round1(cpm),
     wpm: round1(cpm / 5),
-    accuracy: typed > 0 ? round1((correct / typed) * 100) : 100,
+    accuracy: presses > 0 ? round1((pressed / presses) * 100) : 100,
     errors,
   }
 }
@@ -37,12 +38,6 @@ export function createTypingEngine(rawText) {
 
   const columnAt = (position) => position - text.lastIndexOf('\n', position - 1) - 1
 
-  const indentRunLength = (position) => {
-    let end = position
-    while (end < text.length && INDENT_CHARS.has(text[end])) end += 1
-    return end - position
-  }
-
   const tabWidthAt = (position) => {
     if (text[position] === '\t') return 1
     if (text[position] !== ' ') return 0
@@ -53,8 +48,9 @@ export function createTypingEngine(rawText) {
   }
 
   const acceptChars = (position, count, t) => {
-    for (let index = position; index < position + count; index += 1) {
-      keystrokes.push([text[index], t, true])
+    keystrokes.push([text[position], t, true])
+    for (let index = position + 1; index < position + count; index += 1) {
+      keystrokes.push([text[index], t, true, true])
     }
   }
 
@@ -67,7 +63,7 @@ export function createTypingEngine(rawText) {
     const { position } = state
     const expected = text[position]
     const typedChar = key === 'Enter' ? '\n' : key === 'Tab' ? '\t' : key
-    let count = key === 'Tab' ? tabWidthAt(position) : typedChar === expected ? 1 : 0
+    const count = key === 'Tab' ? tabWidthAt(position) : typedChar === expected ? 1 : 0
 
     if (count === 0) {
       keystrokes.push([typedChar, t, false])
@@ -80,9 +76,6 @@ export function createTypingEngine(rawText) {
       return { type: 'error', index: position, expected, typed: typedChar, time: t }
     }
 
-    if (typedChar === '\n') {
-      count += indentRunLength(position + 1)
-    }
     acceptChars(position, count, t)
 
     const nextPosition = position + count
@@ -91,6 +84,7 @@ export function createTypingEngine(rawText) {
       startedAt,
       position: nextPosition,
       typed: state.typed + count,
+      pressed: state.pressed + 1,
       errorAt: null,
       finishedAt: finished ? startedAt + t : null,
     })
@@ -109,8 +103,7 @@ export function createTypingEngine(rawText) {
       state.startedAt === null ? 0 : elapsed(state, state.finishedAt ?? state.pausedAt ?? now)
     return {
       ...computeMetrics({
-        correct: state.position,
-        typed: state.typed,
+        pressed: state.pressed,
         errors: state.errors,
         durationMs,
       }),
@@ -137,8 +130,7 @@ export function createTypingEngine(rawText) {
     const state = store.getState()
     const durationMs = Math.max(1, elapsed(state, state.finishedAt ?? state.startedAt ?? 0))
     const metrics = computeMetrics({
-      correct: state.position,
-      typed: state.typed,
+      pressed: state.pressed,
       errors: state.errors,
       durationMs,
     })

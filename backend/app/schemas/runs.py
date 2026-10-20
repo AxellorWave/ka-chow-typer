@@ -37,9 +37,9 @@ def required_number(*validators):
 
 
 def is_keystroke(item):
-    if not isinstance(item, list) or len(item) != 3:
+    if not isinstance(item, list) or len(item) not in (3, 4):
         return False
-    char, t_ms, ok = item
+    char, t_ms, ok, *flags = item
     return (
         isinstance(char, str)
         and 1 <= len(char) <= MAX_KEY_LENGTH
@@ -47,6 +47,8 @@ def is_keystroke(item):
         and not isinstance(t_ms, bool)
         and t_ms >= 0
         and isinstance(ok, bool)
+        and all(flag is True for flag in flags)
+        and (ok or not flags)
     )
 
 

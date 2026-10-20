@@ -103,7 +103,7 @@ def aggregate_keystrokes(text, keystrokes):
     aggregates = KeystrokeAggregates()
     position = 0
     previous_ms = 0
-    for char, t_ms, ok in keystrokes:
+    for char, t_ms, ok, *auto in keystrokes:
         if position >= len(text):
             raise ApiError(400, "run_mismatch", "Нажатий больше, чем символов в тексте")
         expected = text[position]
@@ -111,6 +111,10 @@ def aggregate_keystrokes(text, keystrokes):
             raise ApiError(400, "run_mismatch", "Нажатия не совпадают с текстом")
         if t_ms < previous_ms:
             raise ApiError(400, "run_mismatch", "Время нажатий должно возрастать")
+        if auto:
+            aggregates.correct += 1
+            position += 1
+            continue
         latency = round(t_ms - previous_ms)
         previous_ms = t_ms
         aggregates.add(aggregates.keys, expected, ok, latency)
