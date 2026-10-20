@@ -5,10 +5,12 @@ from sqlalchemy.dialects.postgresql import insert
 
 from app.errors import ApiError
 from app.extensions import db
-from app.models import BigramStat, DailyChallenge, KeyStat, Run, Text, Track, UserTrack
+from app.models import BigramStat, KeyStat, Run, Text, Track, UserTrack
 from app.services.achievements import check_achievements
+from app.services.daily import validate_daily_run
 from app.services.ghost import check_ghost_beaten
 from app.services.leveling import add_xp, run_xp, xp_for_level
+from app.services.streaks import update_streak
 from app.services.texts import check_access
 from app.services.tracks import check_track_unlocked, get_track
 
@@ -19,7 +21,9 @@ MAX_BONUS_MULTIPLIER = 1.5
 
 def save_run(user, data):
     db.session.refresh(user, with_for_update=True)
-    if data["track_id"] is None:
+    if data["daily_date"] is not None:
+        validate_daily_run(data)
+    elif data["track_id"] is None:
         check_access(user, data["mode"], data["difficulty"])
     validate_references(user, data)
     ghost_beaten = check_ghost_beaten(data, data.pop("ghost_run_id"))
@@ -43,6 +47,7 @@ def save_run(user, data):
     upsert_stats(KeyStat, KeyStat.key, user.id, aggregates.keys)
     upsert_stats(BigramStat, BigramStat.bigram, user.id, aggregates.bigrams)
     cups = update_cups(user, run)
+    update_streak(user)
     if ghost_beaten:
         user.ghosts_beaten += 1
     new_achievements = check_achievements(user, run)
@@ -67,9 +72,6 @@ def save_run(user, data):
 def validate_references(user, data):
     if data["text_id"] is not None and db.session.get(Text, data["text_id"]) is None:
         raise ApiError(404, "text_not_found", "Текст не найден")
-    daily_date = data["daily_date"]
-    if daily_date is not None and db.session.get(DailyChallenge, daily_date) is None:
-        raise ApiError(404, "daily_not_found", "Ежедневное испытание не найдено")
     if data["track_id"] is None:
         return
     track = get_track(data["track_id"])
