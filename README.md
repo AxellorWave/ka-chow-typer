@@ -308,3 +308,33 @@ Access-токен живёт 30 минут и передаётся в загол
 `GET /api/daily/leaderboard?date=YYYY-MM-DD&limit=50` — по умолчанию сегодня. Формат строк и `me` как у `/api/leaderboard`, в зачёт идёт лучшая попытка дня по WPM.
 
 Стрик (`streak_current`, `streak_best` в `/api/auth/me`) обновляется при любом сохранённом заезде по дате МСК: заезд вчера — `+1`, уже был сегодня — без изменений, перерыв больше дня — сброс до 1. На 7-й день подряд выдаётся ачивка «Неделя на трассе».
+
+### Гараж
+
+`GET /api/garage` — нужен вход. Детали и текущая машинка пользователя.
+
+```json
+{
+  "config": {"color": "color_red", "decal": "decal_bolt", "wheels": "wheels_stock", "spoiler": "spoiler_none"},
+  "slots": [
+    {
+      "slot": "color",
+      "items": [
+        {"code": "color_red", "title": "Красный Маквин", "asset": null, "unlocked": true, "unlock": {"type": "default", "value": null, "label": "Открыт"}},
+        {"code": "color_rust", "title": "Ржавчина Мэтра", "asset": null, "unlocked": false, "unlock": {"type": "achievement", "value": "ka_chow", "label": "Ачивка Ka-chow!"}}
+      ]
+    }
+  ]
+}
+```
+
+Слоты всегда идут в порядке `color`, `decal`, `wheels`, `spoiler`. Деталь открыта, если её `unlock.type` — `default`, если уровень пользователя не ниже `value` (для `level`) или если у пользователя есть ачивка с кодом `value` (для `achievement`).
+
+`config` — машинка пользователя: значения по умолчанию (`color_red`, `decal_bolt`, `wheels_stock`, `spoiler_none`), поверх которых наложены сохранённые детали. Устаревшие коды и коды из чужого слота заменяются значениями по умолчанию.
+
+`PUT /api/garage` с телом `{"color": "...", "decal": "...", "wheels": "...", "spoiler": "..."}` — можно передать часть слотов, остальные не меняются. Ответ `200 {"config": {...}}`, тот же объект сохраняется в `users.car_config` и приходит в `/api/auth/me` и лидербордах.
+
+| Ошибка | Когда |
+|---|---|
+| `400 validation_error` | Пустое тело, неизвестный слот, код не из этого слота или несуществующий код |
+| `403 item_locked` | Деталь ещё не открыта; в `message` сказано, что нужно для открытия |
