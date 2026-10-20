@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import current_user, jwt_required
 
+from app.extensions import limiter
 from app.schemas.runs import RunCreateSchema, RunListQuerySchema, run_schema
+from app.security import user_rate_key
 from app.services.runs import list_runs, save_run
 
 runs_bp = Blueprint("runs", __name__, url_prefix="/runs")
@@ -12,6 +14,7 @@ run_list_query_schema = RunListQuerySchema()
 
 @runs_bp.post("")
 @jwt_required(locations=["headers"])
+@limiter.limit("20 per minute; 300 per hour", key_func=user_rate_key)
 def create_run():
     data = run_create_schema.load(request.get_json(silent=True) or {})
     result, created = save_run(current_user, data)

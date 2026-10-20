@@ -4,6 +4,7 @@ from app.models.daily_challenge import DailyChallenge
 from app.models.garage_item import GarageItem
 from app.models.key_stat import KeyStat
 from app.models.oauth_account import OAuthAccount
+from app.models.refresh_token import RefreshToken
 from app.models.run import Run
 from app.models.text import Text
 from app.models.track import Track
@@ -18,6 +19,7 @@ __all__ = [
     "GarageItem",
     "KeyStat",
     "OAuthAccount",
+    "RefreshToken",
     "Run",
     "Text",
     "Track",

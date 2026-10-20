@@ -2,9 +2,10 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import current_user, jwt_required
 
 from app.errors import ApiError
+from app.extensions import limiter
 from app.schemas.profile import PasswordChangeSchema, ProfileUpdateSchema
 from app.schemas.user import user_schema
-from app.security import session_response
+from app.security import session_response, user_rate_key
 from app.services.profile import change_password, remove_avatar, save_avatar, update_nickname
 
 profile_bp = Blueprint("profile", __name__, url_prefix="/profile")
@@ -22,6 +23,7 @@ def patch_profile():
 
 @profile_bp.post("/password")
 @jwt_required(locations=["headers"])
+@limiter.limit("10 per hour", key_func=user_rate_key)
 def post_password():
     data = password_change_schema.load(request.get_json(silent=True) or {})
     return session_response(change_password(current_user, **data))
@@ -29,6 +31,7 @@ def post_password():
 
 @profile_bp.post("/avatar")
 @jwt_required(locations=["headers"])
+@limiter.limit("10 per minute", key_func=user_rate_key)
 def post_avatar():
     file = request.files.get("file")
     if file is None:
