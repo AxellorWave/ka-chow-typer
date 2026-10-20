@@ -122,6 +122,7 @@ export default function RunScreen({
     onFinish: finish,
   })
 
+  const started = useStore(engine.store, (state) => state.startedAt !== null)
   const paused = useStore(engine.store, (state) => state.pausedAt !== null)
   const soundEnabled = useSettingsStore((state) => state.soundEnabled)
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function RunScreen({
     return () => clearInterval(timer)
   }, [engine, phase, paused, soundEnabled])
   useEffect(() => {
-    if (phase !== 'running' || paused) return undefined
+    if (phase !== 'running' || !started || paused) return undefined
 
     const timer = setInterval(() => {
       if (bonusSeconds > 0) {
@@ -167,7 +168,7 @@ export default function RunScreen({
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [phase, paused, bonusSeconds])
+  }, [phase, started, paused, bonusSeconds])
   const count = useCountdown(phase === 'countdown', round, () => setPhase('running'))
 
   const restart = useCallback(() => {
