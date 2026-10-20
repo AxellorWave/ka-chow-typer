@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useNavigation } from 'react-router-dom'
+import OfflineBanner from '../features/auth/OfflineBanner.jsx'
 import ToastHost from '../features/effects/ToastHost.jsx'
 import { usePendingRunsSync } from '../features/train/usePendingRunsSync.js'
 import { useSettingsStore } from '../store/settingsStore.js'
@@ -116,6 +117,7 @@ export default function Layout() {
           </div>
         </div>
       </header>
+      <OfflineBanner />
       <main className={styles.main}>
         <Outlet />
       </main>

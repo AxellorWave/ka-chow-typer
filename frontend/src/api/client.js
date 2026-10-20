@@ -11,12 +11,16 @@ const client = axios.create({
 
 let refreshPromise = null
 
-export function refreshAccessToken() {
+const AUTH_REJECTED_STATUSES = [401, 403, 422]
+
+export const isAuthRejected = (error) => AUTH_REJECTED_STATUSES.includes(error?.response?.status)
+
+export function refreshSession() {
   refreshPromise ??= axios
     .post(`${API_BASE_URL}/auth/refresh`, null, { withCredentials: true })
     .then(({ data }) => {
-      useAuthStore.getState().setAccessToken(data.access_token)
-      return data.access_token
+      useAuthStore.getState().setSession(data.user, data.access_token)
+      return data
     })
     .finally(() => {
       refreshPromise = null
@@ -44,9 +48,11 @@ client.interceptors.response.use(
 
     config._retry = true
     try {
-      await refreshAccessToken()
-    } catch {
-      useAuthStore.getState().clearSession()
+      await refreshSession()
+    } catch (refreshError) {
+      if (isAuthRejected(refreshError)) {
+        useAuthStore.getState().clearSession()
+      }
       return Promise.reject(error)
     }
     return client(config)

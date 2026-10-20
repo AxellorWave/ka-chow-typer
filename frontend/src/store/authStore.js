@@ -9,7 +9,7 @@ export const useAuthStore = create(
       status: 'idle',
       hasSession: false,
       startLoading: () => set({ status: 'loading' }),
-      setAccessToken: (accessToken) => set({ accessToken, hasSession: true }),
+      setOffline: () => set({ status: 'offline' }),
       setSession: (user, accessToken) =>
         set({ user, accessToken, hasSession: true, status: 'ready' }),
       clearSession: () =>
