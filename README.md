@@ -59,7 +59,7 @@ cp .env.example .env
 ./scripts/deploy.sh
 ```
 
-Передеплой после мержа в `main`: дождаться зелёного workflow «Docker images» и снова запустить `./scripts/deploy.sh`. Скрипт делает `git pull`, скачивает свежие образы, перезапускает контейнеры, выполняет `flask seed` и чистит старые образы. Данные БД, аватары и сертификаты лежат в volume и переживают передеплой.
+Передеплой автоматический: после сборки образов job `deploy` заходит на сервер по SSH и запускает `./scripts/deploy.sh` с тегом `sha-<коммит>`. Нужны секреты репозитория в окружении `production` (Settings → Environments → production): `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY` (приватный ключ, публичная часть в `~/.ssh/authorized_keys` на сервере), по желанию `DEPLOY_PORT` (по умолчанию 22) и `DEPLOY_PATH` (по умолчанию `$HOME/ka-chow-typer`). Вручную: `./scripts/deploy.sh` на сервере. Скрипт делает `git pull`, скачивает свежие образы, перезапускает контейнеры, выполняет `flask seed` и чистит старые образы. Данные БД, аватары и сертификаты лежат в volume и переживают передеплой.
 
 Откатиться на конкретный коммит: `export IMAGE_TAG=sha-<7 символов>`, затем `docker compose -f docker-compose.prod.yml pull backend web && docker compose -f docker-compose.prod.yml up -d --no-build`. Собрать на сервере без GHCR: `docker compose -f docker-compose.prod.yml up --build -d`.
 
