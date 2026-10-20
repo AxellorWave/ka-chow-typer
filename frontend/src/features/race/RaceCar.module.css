@@ -5,41 +5,11 @@
   overflow: visible;
 }
 
-.body {
-  stroke: rgba(0, 0, 0, 0.35);
-  stroke-width: 0.6;
-}
-
-.window {
-  fill: var(--color-surface);
-  opacity: 0.85;
-}
-
-.bolt {
-  fill: var(--color-accent);
-  stroke: var(--color-text);
-  stroke-width: 0.5;
-  stroke-linejoin: round;
-}
-
 .number {
   font-family: var(--font-display);
   font-size: 6px;
   fill: var(--color-surface);
   text-anchor: middle;
-}
-
-.tire {
-  fill: var(--color-text);
-}
-
-.rim {
-  fill: var(--track-edge);
-}
-
-.spoke {
-  stroke: var(--color-text);
-  stroke-width: 1.2;
 }
 
 .wheel {
