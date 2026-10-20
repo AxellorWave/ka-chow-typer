@@ -12,6 +12,7 @@ import SummaryCards from '../features/stats/SummaryCards.jsx'
 import WeakSpots from '../features/stats/WeakSpots.jsx'
 import { useAuthStore } from '../store/authStore.js'
 import styles from './ProfilePage.module.css'
+import KeyboardHeatmap from '../features/stats/KeyboardHeatmap.jsx'
 
 export default function ProfilePage() {
   const sessionUser = useAuthStore((state) => state.user)
@@ -46,6 +47,7 @@ export default function ProfilePage() {
         <>
           <SummaryCards summary={summary.data} />
           <ProgressCharts />
+          <KeyboardHeatmap />
           <WeakSpots />
           <RunHistory />
         </>

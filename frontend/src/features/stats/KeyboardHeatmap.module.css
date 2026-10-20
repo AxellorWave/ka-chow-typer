@@ -1,0 +1,74 @@
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.switchGroup {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--color-border, #555);
+  border-radius: 10px;
+}
+
+.button,
+.active {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 7px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.button {
+  background: transparent;
+  color: inherit;
+}
+
+.active {
+  background: var(--color-primary, #f97316);
+  color: #fff;
+}
+
+.keyboardWrapper {
+  overflow-x: auto;
+  padding: 12px 0;
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.gradient {
+  flex: 1;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    to right,
+    hsl(120 75% 42%),
+    hsl(60 75% 42%),
+    hsl(0 75% 42%)
+  );
+}
+
+.legendValues {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 55px 0;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.hint {
+  margin-top: 16px;
+  font-size: 13px;
+  opacity: 0.7;
+}
