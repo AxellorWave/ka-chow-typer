@@ -1,9 +1,8 @@
 import { useSyncExternalStore } from 'react'
 
 const TOUCH_SCREEN = '(pointer: coarse) and (max-width: 1024px)'
-const FINE_POINTER = '(any-pointer: fine)'
 const IME_KEY_CODE = 229
-const STORAGE_KEY = 'kachow-keyboard-seen'
+const STORAGE_KEY = 'kachow-physical-keyboard'
 
 function readSeen() {
   try {
@@ -26,29 +25,30 @@ const listeners = new Set()
 
 const notify = () => listeners.forEach((listener) => listener())
 
+const isEditable = (target) =>
+  target instanceof Element && target.closest('input, textarea, select, [contenteditable]') !== null
+
 function handleKeyDown(event) {
-  if (keyboardSeen || event.keyCode === IME_KEY_CODE || event.key === 'Unidentified') return
+  if (keyboardSeen || event.keyCode === IME_KEY_CODE || event.key?.length !== 1) return
+  if (event.ctrlKey || event.metaKey || event.altKey || isEditable(event.target)) return
   keyboardSeen = true
   rememberSeen()
   notify()
 }
 
 function subscribe(listener) {
-  const queries = [TOUCH_SCREEN, FINE_POINTER].map((query) => window.matchMedia(query))
+  const query = window.matchMedia(TOUCH_SCREEN)
   if (listeners.size === 0) window.addEventListener('keydown', handleKeyDown, true)
   listeners.add(listener)
-  queries.forEach((query) => query.addEventListener('change', listener))
+  query.addEventListener('change', listener)
   return () => {
     listeners.delete(listener)
-    queries.forEach((query) => query.removeEventListener('change', listener))
+    query.removeEventListener('change', listener)
     if (listeners.size === 0) window.removeEventListener('keydown', handleKeyDown, true)
   }
 }
 
-const getSnapshot = () =>
-  !keyboardSeen &&
-  window.matchMedia(TOUCH_SCREEN).matches &&
-  !window.matchMedia(FINE_POINTER).matches
+const getSnapshot = () => !keyboardSeen && window.matchMedia(TOUCH_SCREEN).matches
 
 export function useNeedsKeyboard() {
   return useSyncExternalStore(subscribe, getSnapshot)
