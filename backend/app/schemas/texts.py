@@ -1,6 +1,7 @@
 from marshmallow import EXCLUDE, Schema, ValidationError, fields, validate, validates_schema
 
 from app.models.enums import Lang, Mode
+from app.services.pitstop import PITSTOP_LANGS
 from app.services.texts import LENGTH_LIMITS, MODE_LANGS
 
 INTEGER_ERRORS = {"invalid": "Ожидается целое число"}
@@ -42,3 +43,16 @@ class TextQuerySchema(Schema):
         maximum = LENGTH_LIMITS[mode][1]
         if not 1 <= length <= maximum:
             raise ValidationError(f"От 1 до {maximum}", "length")
+
+
+class PitstopQuerySchema(Schema):
+    class Meta:
+        unknown = EXCLUDE
+
+    lang = fields.Enum(
+        Lang,
+        by_value=True,
+        load_default=Lang.RU,
+        validate=validate.OneOf(PITSTOP_LANGS, error="Допустимо: ru, en"),
+        error_messages={"unknown": "Допустимо: ru, en"},
+    )
