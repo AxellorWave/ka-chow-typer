@@ -45,6 +45,8 @@ function FreeTrain({ user }) {
         payload={flow.result}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={flow.backToSetup}
       />
     )
@@ -89,6 +91,8 @@ function TrackRun({ user, track }) {
         ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={() => navigate('/career')}
         changeLabel="К карте трасс"
       />
@@ -174,6 +178,8 @@ function DailyRun({ user, daily }) {
         ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
+        againLoading={flow.loading}
+        againError={flow.error}
         onChangeSetup={toDaily}
         changeLabel="К заезду дня"
         againLabel="Ещё попытка"
