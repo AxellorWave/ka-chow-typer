@@ -158,6 +158,24 @@ paths:
                   user: {$ref: '#/components/schemas/User'}
         '401': {$ref: '#/components/responses/Unauthorized'}
 
+  /api/auth/providers:
+    get:
+      tags: [Авторизация]
+      summary: Настроенные OAuth-провайдеры
+      description: Провайдеры, для которых заданы ключи. Кнопки остальных фронтенд не показывает.
+      security: []
+      responses:
+        '200':
+          description: Список провайдеров
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items: {type: string, enum: [vk, yandex]}
+
   /api/auth/{provider}/start:
     get:
       tags: [Авторизация]

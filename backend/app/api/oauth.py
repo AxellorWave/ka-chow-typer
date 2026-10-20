@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, current_app, request
+from flask import Blueprint, abort, current_app, jsonify, request
 
 from app.models.enums import OAuthProvider
 from app.services import oauth_vk, oauth_yandex
@@ -23,6 +23,11 @@ def get_provider(name):
     if provider is None:
         abort(404)
     return provider
+
+
+@oauth_bp.get("/providers")
+def providers():
+    return jsonify(providers=[name for name, provider in PROVIDERS.items() if provider.is_configured()])
 
 
 @oauth_bp.get("/<provider_name>/start")
