@@ -1,0 +1,28 @@
+.stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(to bottom, transparent 70%, var(--track-asphalt) 70%), var(--color-gold);
+  box-shadow: var(--shadow-card);
+}
+
+.car {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+  overflow: visible;
+}
+
+.shadow {
+  fill: var(--color-text);
+  opacity: 0.35;
+}
+
+@media (max-width: 640px) {
+  .stage {
+    padding: var(--space-6) var(--space-4);
+  }
+}

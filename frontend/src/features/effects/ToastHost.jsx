@@ -27,7 +27,7 @@ export default function ToastHost() {
               {toast.icon}
             </span>
             <span className={styles.body}>
-              <span className={styles.caption}>Новое достижение</span>
+              <span className={styles.caption}>{toast.caption ?? 'Новое достижение'}</span>
               <strong className={styles.title}>{toast.title}</strong>
               {toast.text && <span className={styles.text}>{toast.text}</span>}
             </span>
