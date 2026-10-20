@@ -41,6 +41,10 @@
   color: var(--color-text-muted);
 }
 
+.car {
+  display: inline-flex;
+}
+
 .streak {
   display: inline-flex;
   padding: var(--space-1) var(--space-2);
@@ -87,4 +91,10 @@
   height: 40px;
   border-radius: var(--radius-sm);
   background: var(--color-bg);
+}
+
+@media (max-width: 640px) {
+  .car {
+    display: none;
+  }
 }

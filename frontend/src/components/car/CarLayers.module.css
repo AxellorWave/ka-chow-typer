@@ -1,0 +1,107 @@
+.body {
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 0.6;
+}
+
+.window {
+  fill: var(--color-surface);
+  opacity: 0.85;
+}
+
+.bolt {
+  fill: var(--color-accent);
+  stroke: var(--color-text);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.flames path:first-child {
+  fill: var(--flame-outer);
+}
+
+.flames path:last-child {
+  fill: var(--flame-core);
+}
+
+.stars polygon {
+  fill: var(--color-accent);
+  stroke: var(--color-text);
+  stroke-width: 0.3;
+  stroke-linejoin: round;
+}
+
+.checkerDark {
+  fill: var(--track-checker-dark);
+}
+
+.checkerLight {
+  fill: var(--track-checker-light);
+}
+
+.post {
+  stroke: var(--color-text);
+  stroke-width: 1.2;
+}
+
+.wing {
+  stroke: var(--color-text);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+.spoiler .wing {
+  fill: var(--track-asphalt);
+}
+
+.carbon .wing {
+  fill: var(--car-black);
+  stroke: var(--color-text-muted);
+}
+
+.champion .wing {
+  fill: var(--color-accent);
+  stroke: var(--color-primary);
+  stroke-width: 0.8;
+}
+
+.tire {
+  fill: var(--color-text);
+}
+
+.rim {
+  fill: var(--track-edge);
+}
+
+.spoke {
+  stroke: var(--color-text);
+  stroke-width: 1.2;
+}
+
+.wall {
+  fill: none;
+  stroke: var(--color-surface);
+  stroke-width: 1.2;
+}
+
+.wheels_lightyear .rim {
+  fill: var(--color-accent);
+}
+
+.wheels_lightyear .tire {
+  stroke: var(--color-accent);
+  stroke-width: 0.5;
+}
+
+.wheels_offroad .tire {
+  stroke: var(--track-asphalt);
+  stroke-width: 1.4;
+  stroke-dasharray: 1.2 1;
+}
+
+.wheels_gold .rim {
+  fill: var(--color-accent-dark);
+}
+
+.wheels_gold .spoke {
+  stroke: var(--color-gold);
+}
