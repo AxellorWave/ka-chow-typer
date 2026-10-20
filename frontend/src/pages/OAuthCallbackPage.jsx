@@ -4,9 +4,14 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { refreshSession } from '../api/client.js'
 import PageLoader from '../components/PageLoader.jsx'
 import AuthCard from '../features/auth/AuthCard.jsx'
+import { takeOAuthReturn } from '../features/auth/oauthReturn.js'
 
 const PROVIDER_ERRORS = {
   access_denied: 'Вход отменён. Можно попробовать ещё раз или войти по email.',
+  provider_unavailable:
+    'Этот способ входа сейчас не настроен. Войдите по email или через другую соцсеть.',
+  invalid_state: 'Сессия входа устарела или открыта в другой вкладке. Начните вход заново.',
+  oauth_failed: 'Соцсеть не подтвердила вход. Попробуйте позже или войдите по email.',
 }
 const DEFAULT_ERROR = 'Не получилось войти через соцсеть. Попробуйте ещё раз.'
 
@@ -25,7 +30,7 @@ export default function OAuthCallbackPage() {
 
   useEffect(() => {
     if (data) {
-      navigate('/', { replace: true })
+      navigate(takeOAuthReturn(), { replace: true })
     }
   }, [data, navigate])
 
