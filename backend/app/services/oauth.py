@@ -121,14 +121,13 @@ def find_or_create_user(profile):
         )
     )
     if account is not None:
-        user = account.user
-        if user.avatar_url is None and profile.avatar_url:
-            user.avatar_url = profile.avatar_url
-            db.session.commit()
-        return user
+        return account.user
 
     email = profile.email.strip().lower() if profile.email else None
     user = db.session.scalar(select(User).where(User.email == email)) if email else None
+    if user is not None and user.password_hash is not None:
+        user = None
+        email = None
     if user is None:
         user = User(
             email=email,
@@ -136,8 +135,6 @@ def find_or_create_user(profile):
             avatar_url=profile.avatar_url,
         )
         db.session.add(user)
-    elif user.avatar_url is None and profile.avatar_url:
-        user.avatar_url = profile.avatar_url
 
     db.session.add(
         OAuthAccount(
