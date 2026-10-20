@@ -1,3 +1,4 @@
+import { playSound } from '../features/audio/sounds.js'
 import styles from './Button.module.css'
 
 export default function Button({
@@ -6,8 +7,13 @@ export default function Button({
   disabled = false,
   className,
   children,
+  onClick,
   ...buttonProps
 }) {
+  const handleClick = (event) => {
+    playSound('sfx-ui-click')
+    onClick?.(event)
+  }
   const classNames = [styles.button, styles[variant], className].filter(Boolean).join(' ')
 
   return (
@@ -16,6 +22,7 @@ export default function Button({
       disabled={disabled || loading}
       aria-busy={loading}
       {...buttonProps}
+      onClick={handleClick}
     >
       {loading && <span className={styles.spinner} aria-hidden="true" />}
       {children}

@@ -25,40 +25,6 @@ export async function closeAudioContext() {
   }
 }
 
-export function playTireSound() {
-  const context = getAudioContext()
-  const now = context.currentTime
-
-  const oscillator = context.createOscillator()
-  const filter = context.createBiquadFilter()
-  const gain = context.createGain()
-
-  oscillator.type = 'sawtooth'
-  oscillator.frequency.setValueAtTime(1200, now)
-  oscillator.frequency.exponentialRampToValueAtTime(650, now + 0.4)
-
-  filter.type = 'highpass'
-  filter.frequency.value = 500
-
-  gain.gain.setValueAtTime(0.0001, now)
-  gain.gain.exponentialRampToValueAtTime(0.035, now + 0.03)
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4)
-
-  oscillator.connect(filter)
-  filter.connect(gain)
-  gain.connect(context.destination)
-
-  oscillator.start(now)
-  oscillator.stop(now + 0.4)
-
-  oscillator.onended = () => {
-    oscillator.disconnect()
-    filter.disconnect()
-    gain.disconnect()
-  }
-}
-
-
 let engineOscillator = null
 let engineGain = null
 
@@ -109,54 +75,4 @@ export function stopEngineSound() {
 
   engineOscillator = null
   engineGain = null
-}
-
-export function playNitroSound() {
-  const context = getAudioContext()
-  const now = context.currentTime
-  const duration = 0.5
-
-  const oscillator = context.createOscillator()
-  const bass = context.createOscillator()
-  const gain = context.createGain()
-  const bassGain = context.createGain()
-
-  oscillator.type = 'sawtooth'
-  oscillator.frequency.setValueAtTime(150, now)
-  oscillator.frequency.exponentialRampToValueAtTime(1200, now + 0.4)
-
-  bass.type = 'sawtooth'
-  bass.frequency.setValueAtTime(65, now)
-  bass.frequency.exponentialRampToValueAtTime(180, now + 0.4)
-
-  gain.gain.setValueAtTime(0.0001, now)
-  gain.gain.exponentialRampToValueAtTime(0.055, now + 0.12)
-  gain.gain.setValueAtTime(0.055, now + 0.35)
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-
-  bassGain.gain.setValueAtTime(0.0001, now)
-  bassGain.gain.exponentialRampToValueAtTime(0.025, now + 0.12)
-  bassGain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-
-  oscillator.connect(gain)
-  gain.connect(context.destination)
-
-  bass.connect(bassGain)
-  bassGain.connect(context.destination)
-
-  oscillator.start(now)
-  bass.start(now)
-
-  oscillator.stop(now + duration)
-  bass.stop(now + duration)
-
-  oscillator.onended = () => {
-    oscillator.disconnect()
-    gain.disconnect()
-  }
-
-  bass.onended = () => {
-    bass.disconnect()
-    bassGain.disconnect()
-  }
 }

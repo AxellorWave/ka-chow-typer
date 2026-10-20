@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { comboMultiplier } from '../game/scoring.js'
+import { playSound } from '../audio/sounds.js'
 import styles from './ComboBurst.module.css'
+
+const KA_CHOW_TIER = 5
 
 const BURSTS = {
   3: { text: '🔥 ×3 Огонь!', tone: 'fire' },
@@ -14,8 +17,10 @@ export default function ComboBurst({ tracker }) {
     () =>
       tracker.store.subscribe((state, previous) => {
         const tier = comboMultiplier(state.combo)
-        if (tier === comboMultiplier(previous.combo) || !BURSTS[tier]) return
-        if (state.combo < previous.combo) return
+        const previousTier = comboMultiplier(previous.combo)
+        if (tier <= previousTier || state.combo < previous.combo) return
+        playSound(tier === KA_CHOW_TIER ? 'vo-ka-chow' : 'sfx-combo')
+        if (!BURSTS[tier]) return
         setBurst({ id: state.combo, ...BURSTS[tier] })
       }),
     [tracker],

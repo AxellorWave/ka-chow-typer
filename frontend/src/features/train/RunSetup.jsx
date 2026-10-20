@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
 import Button from '../../components/Button.jsx'
 import { DIFFICULTIES, MODES, difficultyLock, langsForMode, modeLock } from './options.js'
+import { playSound, stopSound } from '../audio/sounds.js'
 import styles from './RunSetup.module.css'
+
+const VOICE_FADE_MS = 300
 
 function modeAccess(mode, user) {
   if (!modeLock(mode, user)) return 'открыт'
@@ -56,6 +59,11 @@ export default function RunSetup({ user, setup, onChange, onStart, loading, erro
   const mode = MODES.find((item) => item.id === setup.mode) ?? MODES[0]
   const lang = langs.find((item) => item.id === setup.lang) ?? langs[0]
   const difficulty = DIFFICULTIES.find((item) => item.id === setup.difficulty) ?? DIFFICULTIES[0]
+
+  useEffect(() => {
+    playSound('vo-ready')
+    return () => stopSound('vo-ready', { fadeMs: VOICE_FADE_MS })
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = (event) => {

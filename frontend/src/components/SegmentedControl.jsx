@@ -1,3 +1,4 @@
+import { playSound } from '../features/audio/sounds.js'
 import styles from './SegmentedControl.module.css'
 
 export default function SegmentedControl({ options, value, onChange, label, size = 'md' }) {
@@ -9,7 +10,10 @@ export default function SegmentedControl({ options, value, onChange, label, size
           type="button"
           className={option.value === value ? `${styles.option} ${styles.active}` : styles.option}
           aria-pressed={option.value === value}
-          onClick={() => onChange(option.value)}
+          onClick={() => {
+            if (option.value !== value) playSound('sfx-tab')
+            onChange(option.value)
+          }}
         >
           {option.label}
         </button>
