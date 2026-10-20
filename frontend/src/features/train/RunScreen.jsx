@@ -93,10 +93,10 @@ export default function RunScreen({
 
   const engine = useTypingEngine(run.text, {
     enabled: phase === 'running',
-    onCorrect: (outcome) => {
+    onCorrect: () => {
       const previousCombo = tracker.store.getState().combo
 
-      tracker.hit(outcome.count, bonusActive ? TURBO_BONUS.multiplier : 1)
+      tracker.hit(bonusActive ? TURBO_BONUS.multiplier : 1)
 
       const currentCombo = tracker.store.getState().combo
 
