@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
-import { getMe } from '../../api/auth.js'
-import { refreshAccessToken } from '../../api/client.js'
+import { isAuthRejected, refreshSession } from '../../api/client.js'
 import { useAuthStore } from '../../store/authStore.js'
 
-async function restoreSession() {
-  const { status, hasSession, startLoading, setSession, clearSession } = useAuthStore.getState()
-  if (status !== 'idle') {
+const RETRY_DELAY_MS = 5000
+
+export async function restoreSession() {
+  const { status, hasSession, startLoading, clearSession, setOffline } = useAuthStore.getState()
+  if (status !== 'idle' && status !== 'offline') {
     return
   }
   if (!hasSession) {
@@ -15,16 +16,32 @@ async function restoreSession() {
 
   startLoading()
   try {
-    const accessToken = await refreshAccessToken()
-    const user = await getMe()
-    setSession(user, accessToken)
-  } catch {
-    clearSession()
+    await refreshSession()
+  } catch (error) {
+    if (isAuthRejected(error)) {
+      clearSession()
+    } else {
+      setOffline()
+    }
   }
 }
 
 export function useSessionBootstrap() {
+  const status = useAuthStore((state) => state.status)
+
   useEffect(() => {
-    restoreSession()
-  }, [])
+    if (status === 'idle') {
+      restoreSession()
+      return
+    }
+    if (status !== 'offline') {
+      return
+    }
+    const timer = setTimeout(restoreSession, RETRY_DELAY_MS)
+    window.addEventListener('online', restoreSession)
+    return () => {
+      clearTimeout(timer)
+      window.removeEventListener('online', restoreSession)
+    }
+  }, [status])
 }

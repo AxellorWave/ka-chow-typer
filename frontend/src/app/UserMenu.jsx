@@ -1,4 +1,3 @@
-import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { logout } from '../api/auth.js'
 import CarModel from '../components/car/CarModel.jsx'
@@ -10,12 +9,10 @@ export default function UserMenu() {
   const status = useAuthStore((state) => state.status)
   const user = useAuthStore((state) => state.user)
   const clearSession = useAuthStore((state) => state.clearSession)
-  const queryClient = useQueryClient()
 
   async function handleLogout() {
     await logout().catch(() => null)
     clearSession()
-    queryClient.clear()
   }
 
   if (status !== 'ready') {
