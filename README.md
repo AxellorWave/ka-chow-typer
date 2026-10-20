@@ -67,22 +67,28 @@
 
 ## Запуск
 
-Нужен только Docker.
+Нужен только Docker, клонировать репозиторий не обязательно: готовые образы лежат в GHCR.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/AxellorWave/ka-chow-typer/main/docker-compose.quickstart.yml -o kachowtyper.yml
+docker compose -f kachowtyper.yml up -d
+```
+
+Через полминуты откройте http://localhost:8080, Swagger UI будет на http://localhost:8080/api/docs. Тексты, трассы, ачивки и гараж загружаются сами при старте. Остановить и удалить данные: `docker compose -f kachowtyper.yml down -v`.
+
+Этот вариант только для локального знакомства: секреты в нём общие, сайт доступен только с вашей машины.
+
+<details>
+<summary>Разработка</summary>
 
 ```bash
 git clone https://github.com/AxellorWave/ka-chow-typer.git && cd ka-chow-typer
 cp .env.example .env && docker compose up --build -d && docker compose exec backend flask seed
 ```
 
-Откройте http://localhost:5173. `flask seed` загружает словари, тексты, трассы, ачивки и гараж, повторный запуск безопасен.
+Фронтенд с hot reload на http://localhost:5173, API на http://localhost:5000, PostgreSQL на `localhost:5432` с логином и паролем `kachow`. Вход через VK ID и Яндекс ID заработает после того, как вы впишете ключи в `.env`.
 
-| Адрес | Что там |
-|---|---|
-| http://localhost:5173 | Фронтенд |
-| http://localhost:5173/api/docs | Swagger UI |
-| `localhost:5432` | PostgreSQL, логин и пароль `kachow` |
-
-Вход через VK ID и Яндекс ID заработает после того, как вы впишете ключи в `.env`. Без них остаётся вход по почте.
+</details>
 
 <details>
 <summary>Продакшен</summary>
@@ -150,7 +156,7 @@ scripts/   деплой
 
 ## API
 
-Вся документация API в [`backend/openapi.yaml`](backend/openapi.yaml): 27 эндпоинтов с примерами ответов и кодами ошибок. Открыть в Swagger UI: [kachowtyper.ru/api/docs](https://kachowtyper.ru/api/docs), локально http://localhost:5173/api/docs.
+Вся документация API в [`backend/openapi.yaml`](backend/openapi.yaml): 28 эндпоинтов с примерами ответов и кодами ошибок. Открыть в Swagger UI: [kachowtyper.ru/api/docs](https://kachowtyper.ru/api/docs), локально http://localhost:8080/api/docs.
 
 ## Как мы работали
 
