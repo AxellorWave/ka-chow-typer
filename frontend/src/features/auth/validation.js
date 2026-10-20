@@ -22,7 +22,7 @@ export function validateNickname(nickname) {
   return null
 }
 
-function validateNewPassword(password) {
+export function validateNewPassword(password) {
   if (!password) return REQUIRED
   if (password.length < 8 || password.length > 128) return 'От 8 до 128 символов'
   return null

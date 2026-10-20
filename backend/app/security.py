@@ -17,6 +17,19 @@ def user_lookup(_jwt_header, jwt_data):
     return db.session.get(User, int(jwt_data["sub"]))
 
 
+@jwt.token_in_blocklist_loader
+def token_revoked(_jwt_header, jwt_data):
+    user = db.session.get(User, int(jwt_data["sub"]))
+    if user is None or user.password_changed_at is None:
+        return False
+    return jwt_data["iat"] < int(user.password_changed_at.timestamp())
+
+
+@jwt.revoked_token_loader
+def revoked_token(_jwt_header, _jwt_data):
+    return error_response(401, "token_revoked", "Сессия завершена, войдите снова")
+
+
 @jwt.user_lookup_error_loader
 def user_lookup_error(_jwt_header, _jwt_data):
     return error_response(401, "user_not_found", "Пользователь не найден")

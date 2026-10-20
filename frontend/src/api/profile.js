@@ -16,3 +16,8 @@ export async function removeAvatar() {
   const { data } = await client.delete('/profile/avatar')
   return data.user
 }
+
+export async function changePassword(payload) {
+  const { data } = await client.post('/profile/password', payload)
+  return data
+}
