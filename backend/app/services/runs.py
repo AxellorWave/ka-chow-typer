@@ -9,6 +9,7 @@ from app.models import BigramStat, DailyChallenge, KeyStat, Run, Text, Track, Us
 from app.services.achievements import check_achievements
 from app.services.leveling import add_xp, run_xp, xp_for_level
 from app.services.texts import check_access
+from app.services.tracks import check_track_unlocked, get_track
 
 POINTS_PER_CHAR = 10
 MAX_COMBO_MULTIPLIER = 5
@@ -17,7 +18,8 @@ MAX_BONUS_MULTIPLIER = 1.5
 
 def save_run(user, data):
     db.session.refresh(user, with_for_update=True)
-    check_access(user, data["mode"], data["difficulty"])
+    if data["track_id"] is None:
+        check_access(user, data["mode"], data["difficulty"])
     validate_references(user, data)
     aggregates = aggregate_keystrokes(data["text"], data["keystrokes"])
     validate_totals(data, aggregates)
@@ -65,17 +67,14 @@ def validate_references(user, data):
         raise ApiError(404, "daily_not_found", "Ежедневное испытание не найдено")
     if data["track_id"] is None:
         return
-    track = db.session.get(Track, data["track_id"])
-    if track is None:
-        raise ApiError(404, "track_not_found", "Трасса не найдена")
-    if user.level < track.min_level:
-        raise ApiError(403, "track_locked", f"Трасса откроется на {track.min_level} уровне")
+    track = get_track(data["track_id"])
     if (track.mode, track.lang, track.difficulty) != (
         data["mode"].value,
         data["lang"].value,
         data["difficulty"],
     ):
         raise ApiError(400, "track_mismatch", "Параметры заезда не совпадают с трассой")
+    check_track_unlocked(user, track)
 
 
 class KeystrokeAggregates:

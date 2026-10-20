@@ -25,9 +25,12 @@ class TextQuerySchema(Schema):
         validate=validate.Range(min=1, max=5, error="От {min} до {max}"),
     )
     length = fields.Integer(load_default=None, error_messages=INTEGER_ERRORS)
+    track_id = fields.Integer(load_default=None, error_messages=INTEGER_ERRORS)
 
     @validates_schema
     def validate_combination(self, data, **kwargs):
+        if data.get("track_id") is not None:
+            return
         mode, lang, length = data["mode"], data.get("lang"), data.get("length")
         if lang is not None and lang not in MODE_LANGS[mode]:
             allowed = ", ".join(item.value for item in MODE_LANGS[mode])
