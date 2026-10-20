@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
 import SaveProgressCta from '../auth/SaveProgressCta.jsx'
+import GhostVerdict from '../ghost/GhostVerdict.jsx'
 import LevelUpModal from '../effects/LevelUpModal.jsx'
 import { showAchievementToasts } from '../effects/toastStore.js'
 import { pitstopPath } from '../pitstop/pitstop.js'
@@ -92,6 +93,7 @@ function SaveStatus({ save }) {
 
 export default function ResultScreen({
   payload,
+  ghost,
   user,
   onAgain,
   onChangeSetup,
@@ -150,6 +152,8 @@ export default function ResultScreen({
           </div>
         ))}
       </dl>
+
+      {ghost && <GhostVerdict ghost={ghost} durationMs={payload.duration_ms} />}
 
       {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
 

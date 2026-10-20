@@ -7,11 +7,12 @@ export const useTrainSetup = create(
       mode: 'words',
       lang: 'ru',
       difficulty: 1,
+      ghost: 'top',
       update: (patch) => set(patch),
     }),
     {
       name: 'kachow-train-setup',
-      partialize: ({ mode, lang, difficulty }) => ({ mode, lang, difficulty }),
+      partialize: ({ mode, lang, difficulty, ghost }) => ({ mode, lang, difficulty, ghost }),
     },
   ),
 )

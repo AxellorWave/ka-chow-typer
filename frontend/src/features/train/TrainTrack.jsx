@@ -1,6 +1,7 @@
 import { useStore } from 'zustand'
 import { useAuthStore } from '../../store/authStore.js'
 import { comboMultiplier } from '../game/scoring.js'
+import { useGhostProgress } from '../ghost/useGhost.js'
 import ComboBurst from '../effects/ComboBurst.jsx'
 import SparkCanvas from '../effects/SparkCanvas.jsx'
 import RaceTrack from '../race/RaceTrack.jsx'
@@ -15,7 +16,7 @@ const SPEED_TIERS = [
 
 const speedFor = (wpm) => SPEED_TIERS.find((tier) => wpm < tier.below).speed
 
-export default function TrainTrack({ engine, tracker, finished }) {
+export default function TrainTrack({ engine, tracker, finished, ghost }) {
   const user = useAuthStore((state) => state.user)
   const position = useStore(engine.store, (state) => state.position)
   const errors = useStore(engine.store, (state) => state.errors)
@@ -23,6 +24,7 @@ export default function TrainTrack({ engine, tracker, finished }) {
   const paused = useStore(engine.store, (state) => state.pausedAt !== null)
   const combo = useStore(tracker.store, (state) => comboMultiplier(state.combo))
   const { wpm } = useTypingMetrics(engine, 500)
+  const ghostProgress = useGhostProgress(engine, ghost)
 
   const moving = started && !paused && !finished
   const total = engine.text.length
@@ -39,6 +41,18 @@ export default function TrainTrack({ engine, tracker, finished }) {
       finished,
     },
   ]
+
+  if (ghost) {
+    cars.unshift({
+      id: 'ghost',
+      ghost: true,
+      progress: ghostProgress,
+      config: ghost.user.car_config,
+      label: ghost.who === 'self' ? '👻 Мой рекорд' : `👻 ${ghost.user.nickname}`,
+      speed: moving && ghostProgress < 1 ? 'cruise' : 'idle',
+      finished: ghostProgress >= 1,
+    })
+  }
 
   return (
     <div className={styles.wrapper}>
