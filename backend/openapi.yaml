@@ -567,6 +567,40 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
 
+  /api/profile/password:
+    post:
+      tags: [Профиль]
+      summary: Сменить или задать пароль
+      description: Аккаунт с паролем передаёт `current_password`. Аккаунт VK или Яндекс без пароля задаёт его без `current_password`, после этого можно входить по почте. Токены, выпущенные до смены, перестают работать; текущая сессия получает новые и cookie `kachow_refresh`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [new_password]
+              properties:
+                current_password: {type: string, nullable: true, example: kachow-95}
+                new_password: {type: string, minLength: 8, maxLength: 128, example: kachow-2006}
+      responses:
+        '200':
+          description: Пароль сохранён, новая сессия
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/RefreshCookie'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AuthResponse'}
+        '400':
+          description: '`validation_error` или `invalid_password` — неверный текущий пароль, ошибка в `fields.current_password`'
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example:
+                error: invalid_password
+                message: Неверный текущий пароль
+                fields: {current_password: [Неверный текущий пароль]}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+
   /api/profile/avatar:
     post:
       tags: [Профиль]
@@ -657,7 +691,7 @@ components:
             message: Проверьте введённые данные
             fields: {password: [От 8 до 128 символов]}
     Unauthorized:
-      description: '`unauthorized` (нет токена), `invalid_token` или `token_expired` (пора делать refresh)'
+      description: '`unauthorized` (нет токена), `invalid_token`, `token_expired` (пора делать refresh) или `token_revoked` (пароль сменён, нужно войти заново)'
       content:
         application/json:
           schema: {$ref: '#/components/schemas/Error'}
