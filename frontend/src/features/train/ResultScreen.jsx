@@ -319,7 +319,7 @@ export default function ResultScreen({
 
           <SpeedChart segments={segments} ghostWpm={ghost?.wpm} />
 
-          {ghost && <GhostVerdict ghost={ghost} durationMs={payload.duration_ms} />}
+          {ghost && <GhostVerdict ghost={ghost} run={payload} />}
 
           <div className={styles.cardsRow}>
             <NewAchievements items={save.data?.new_achievements} />

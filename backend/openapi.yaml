@@ -427,7 +427,8 @@ paths:
       description: |
         Передаётся ровно один из `text_id` и `track_id`. `who=self` — свой лучший заезд, `top` — лучший среди всех.
         `timeline` — точки `[t_ms, progress]` до 200 штук, `progress` от 0 до 1.
-        Чтобы засчитать обгон, передай `ghost_run_id` в `POST /api/runs`.
+        Чтобы засчитать обгон, передай `ghost_run_id` в `POST /api/runs`. На трассе обгон считается по WPM
+        (текст каждый раз новый), на тексте — по времени.
       parameters:
         - {name: text_id, in: query, schema: {type: integer}}
         - {name: track_id, in: query, schema: {type: integer}}
@@ -810,7 +811,7 @@ components:
         text: {type: string, maxLength: 20000}
         text_id: {type: [integer, 'null']}
         track_id: {type: [integer, 'null'], description: Заезд по трассе карьеры}
-        daily_date: {type: [string, 'null'], format: date, description: Заезд дня; только сегодняшняя дата МСК}
+        daily_date: {type: [string, 'null'], format: date, description: Заезд дня; сегодняшняя дата МСК или вчерашняя в течение часа после полуночи}
         ghost_run_id: {type: [integer, 'null'], description: Призрак, с которым сравнивается заезд}
         client_run_id: {type: [string, 'null'], minLength: 8, maxLength: 64, description: Ключ идемпотентности}
         typed_chars: {type: integer, minimum: 0}
@@ -847,7 +848,7 @@ components:
             track_id: {type: integer, example: 1}
             cups: {type: integer, minimum: 0, maximum: 3, example: 2}
             new_cups: {type: integer, example: 1}
-        ghost_beaten: {type: boolean, example: false}
+        ghost_beaten: {type: boolean, example: false, description: 'Обогнал призрака: на трассе по WPM, на тексте по времени'}
 
     Run:
       type: object

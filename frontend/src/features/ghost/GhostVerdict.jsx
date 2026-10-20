@@ -2,17 +2,21 @@ import styles from './GhostVerdict.module.css'
 
 const TENTH_MS = 100
 
-const seconds = (tenths) => (Math.abs(tenths) / 10).toFixed(1).replace('.', ',')
+const tenths = (value) => (Math.abs(value) / 10).toFixed(1).replace('.', ',')
 
-export default function GhostVerdict({ ghost, durationMs }) {
-  const gap = Math.round((ghost.duration_ms - durationMs) / TENTH_MS)
+export default function GhostVerdict({ ghost, run }) {
+  const bySpeed = run.track_id != null
+  const gap = bySpeed
+    ? Math.round((run.wpm - ghost.wpm) * 10)
+    : Math.round((ghost.duration_ms - run.duration_ms) / TENTH_MS)
+  const amount = bySpeed ? `${tenths(gap)} WPM` : `${tenths(gap)} с`
   const self = ghost.who === 'self'
 
   if (gap > 0) {
     const rival = self ? 'свой рекорд' : `призрака ${ghost.user.nickname}`
     return (
       <p className={`${styles.verdict} ${styles.win}`}>
-        👻 Обогнал {rival} на {seconds(gap)} с
+        👻 Обогнал {rival} на {amount}
       </p>
     )
   }
@@ -20,7 +24,7 @@ export default function GhostVerdict({ ghost, durationMs }) {
     const rival = self ? 'своего рекорда' : `призрака ${ghost.user.nickname}`
     return (
       <p className={styles.verdict}>
-        👻 Отстал от {rival} на {seconds(gap)} с
+        👻 Отстал от {rival} на {amount}
       </p>
     )
   }
