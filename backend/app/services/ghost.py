@@ -82,5 +82,8 @@ def check_ghost_beaten(data, ghost_run_id):
     ghost_run = get_ghost_run(ghost_run_id)
     if not ghost_matches(ghost_run, data):
         raise ApiError(400, "ghost_mismatch", "Призрак проехал другой текст или трассу")
-    completed = is_ranked(data["text"], data["correct_chars"])
-    return completed and data["duration_ms"] < ghost_run.duration_ms
+    if not is_ranked(data["text"], data["correct_chars"]):
+        return False
+    if data["track_id"] is not None:
+        return data["wpm"] > ghost_run.wpm
+    return data["duration_ms"] < ghost_run.duration_ms

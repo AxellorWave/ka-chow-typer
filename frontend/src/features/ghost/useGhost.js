@@ -16,13 +16,16 @@ export function useGhost(run, who) {
   const userId = useAuthStore((state) => state.user?.id ?? null)
   const target = ghostTarget(run)
   const enabled = userId !== null && who !== 'off' && target !== null
-  const { data } = useQuery({
+  const { data, isSuccess, isError } = useQuery({
     queryKey: ['ghost', who, target, userId],
     queryFn: () => getGhost({ ...target, who }),
     enabled,
     retry: false,
   })
-  return enabled ? (data ?? null) : null
+  return {
+    ghost: enabled ? (data ?? null) : null,
+    missing: enabled && (isError || (isSuccess && data === null)),
+  }
 }
 
 export function useGhostProgress(engine, ghost) {

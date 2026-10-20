@@ -109,7 +109,7 @@ export default function RunScreen({
 
   const finishTimerRef = useRef(null)
   const errorStreakRef = useRef(0)
-  const ghost = useGhost(run, ghostWho)
+  const { ghost, missing: ghostMissing } = useGhost(run, ghostWho)
 
   const finish = useCallback(
     (result) => {
@@ -325,6 +325,11 @@ export default function RunScreen({
         <ComboMeter tracker={tracker} />
         <NitroBar tracker={tracker} />
         <BonusChip seconds={bonusSeconds} />
+        {ghostMissing && (
+          <span className={styles.ghostMissing} role="status">
+            👻 Призрака для этого заезда пока нет
+          </span>
+        )}
       </div>
 
       <div ref={boardRef} className={styles.board}>
