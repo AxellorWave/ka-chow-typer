@@ -70,11 +70,12 @@
 Нужен только Docker, клонировать репозиторий не обязательно: готовые образы лежат в GHCR.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/AxellorWave/ka-chow-typer/main/docker-compose.quickstart.yml -o kachowtyper.yml
-docker compose -f kachowtyper.yml up -d
+mkdir kachowtyper && cd kachowtyper
+curl -fsSL https://raw.githubusercontent.com/AxellorWave/ka-chow-typer/main/docker-compose.quickstart.yml -o docker-compose.yml
+docker compose up -d
 ```
 
-Через полминуты откройте http://localhost:8080, Swagger UI будет на http://localhost:8080/api/docs. Тексты, трассы, ачивки и гараж загружаются сами при старте. Остановить и удалить данные: `docker compose -f kachowtyper.yml down -v`.
+Через полминуты откройте http://localhost:8080, Swagger UI будет на http://localhost:8080/api/docs. Тексты, трассы, ачивки и гараж загружаются сами при старте. Остановить и удалить данные: `docker compose down -v` в той же папке.
 
 Этот вариант только для локального знакомства: секреты в нём общие, сайт доступен только с вашей машины.
 
