@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import Button from '../components/Button.jsx'
+import EmptyState from '../components/EmptyState.jsx'
 import QueryError from '../components/QueryError.jsx'
 import SegmentedControl from '../components/SegmentedControl.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -114,6 +115,13 @@ export default function GaragePage() {
                 onChange={setSlot}
               />
             </div>
+            {items.length === 0 && (
+              <EmptyState
+                icon="🔧"
+                title="Деталей пока нет"
+                description="Для этого слота ещё ничего не завезли."
+              />
+            )}
             <div className={styles.grid}>
               {items.map((item) => (
                 <GarageItemCard

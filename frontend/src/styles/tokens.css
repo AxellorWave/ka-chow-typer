@@ -44,6 +44,9 @@
   --track-checker-light: var(--color-surface);
   --flame-core: #ffd23f;
   --flame-outer: var(--color-accent-dark);
+  --heat-low: var(--color-success);
+  --heat-mid: var(--color-accent);
+  --heat-high: var(--color-error);
 
   --finger-left-pinky: oklch(0.86 0.09 15);
   --finger-left-ring: oklch(0.86 0.09 60);

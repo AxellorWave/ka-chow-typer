@@ -11,7 +11,6 @@ export const TURBO_BONUS = {
 
 export function getRandomBonusDelay() {
   return (
-    BONUS_MIN_DELAY_MS +
-    Math.floor(Math.random() * (BONUS_MAX_DELAY_MS - BONUS_MIN_DELAY_MS + 1))
+    BONUS_MIN_DELAY_MS + Math.floor(Math.random() * (BONUS_MAX_DELAY_MS - BONUS_MIN_DELAY_MS + 1))
   )
 }
