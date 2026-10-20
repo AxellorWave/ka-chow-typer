@@ -8,7 +8,7 @@ HTTP_MESSAGES = {
     403: "Доступ запрещён",
     404: "Не найдено",
     405: "Метод не поддерживается",
-    413: "Слишком большой запрос",
+    413: "Файл слишком большой",
     429: "Слишком много запросов",
 }
 
@@ -41,7 +41,8 @@ def register_error_handlers(app):
     @app.errorhandler(HTTPException)
     def handle_http_error(exc):
         message = HTTP_MESSAGES.get(exc.code, exc.description)
-        return error_response(exc.code, exc.name.lower().replace(" ", "_"), message)
+        error = "file_too_large" if exc.code == 413 else exc.name.lower().replace(" ", "_")
+        return error_response(exc.code, error, message)
 
     @app.errorhandler(Exception)
     def handle_unexpected_error(exc):

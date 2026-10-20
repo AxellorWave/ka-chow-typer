@@ -7,6 +7,17 @@ EMAIL_ERRORS = {**REQUIRED, "invalid": "Некорректный email"}
 STRING_ERRORS = {**REQUIRED, "invalid": "Ожидается строка"}
 
 
+def nickname_field():
+    return fields.String(
+        required=True,
+        error_messages=STRING_ERRORS,
+        validate=[
+            validate.Length(min=3, max=32, error="От {min} до {max} символов"),
+            validate.Regexp(NICKNAME_PATTERN, error="Только буквы, цифры, _ и -"),
+        ],
+    )
+
+
 class NormalizeEmailMixin:
     @pre_load
     def normalize_email(self, data, **kwargs):
@@ -30,14 +41,7 @@ class RegisterSchema(NormalizeEmailMixin, Schema):
         error_messages=STRING_ERRORS,
         validate=validate.Length(min=8, max=128, error="От {min} до {max} символов"),
     )
-    nickname = fields.String(
-        required=True,
-        error_messages=STRING_ERRORS,
-        validate=[
-            validate.Length(min=3, max=32, error="От {min} до {max} символов"),
-            validate.Regexp(NICKNAME_PATTERN, error="Только буквы, цифры, _ и -"),
-        ],
-    )
+    nickname = nickname_field()
 
 
 class LoginSchema(NormalizeEmailMixin, Schema):
