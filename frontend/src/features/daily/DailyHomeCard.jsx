@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
+import QueryError from '../../components/QueryError.jsx'
 import Skeleton from '../../components/Skeleton.jsx'
 import { formatNumber } from '../stats/format.js'
 import Countdown from './Countdown.jsx'
@@ -16,10 +17,10 @@ function preview(text) {
 
 export default function DailyHomeCard() {
   const queryClient = useQueryClient()
-  const { data, isPending, isError } = useDaily()
+  const { data, isPending, isError, refetch } = useDaily()
   const ride = useRideDaily(data?.date)
 
-  if (isError) return null
+  if (isError) return <QueryError onRetry={refetch} title="Не удалось загрузить заезд дня" />
   if (isPending) return <Skeleton height="96px" />
 
   return (
