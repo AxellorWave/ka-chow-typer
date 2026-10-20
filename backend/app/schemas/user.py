@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 
 from app.services.leveling import max_difficulty, unlocked_modes, xp_for_level, xp_to_next_level
+from app.services.streaks import current_streak
 
 
 class UserSchema(Schema):
@@ -15,7 +16,7 @@ class UserSchema(Schema):
     next_level_xp = fields.Method("get_next_level_xp")
     unlocked_modes = fields.Method("get_unlocked_modes")
     max_difficulty = fields.Method("get_max_difficulty")
-    streak_current = fields.Integer()
+    streak_current = fields.Method("get_streak_current")
     streak_best = fields.Integer()
     car_config = fields.Dict()
     has_password = fields.Method("get_has_password")
@@ -36,6 +37,9 @@ class UserSchema(Schema):
 
     def get_max_difficulty(self, user):
         return max_difficulty(user.level)
+
+    def get_streak_current(self, user):
+        return current_streak(user)
 
     def get_has_password(self, user):
         return user.password_hash is not None
