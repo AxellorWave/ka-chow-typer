@@ -99,3 +99,17 @@
     transform: translateY(2px);
   }
 }
+
+.heatKey {
+  background: var(--heat-color);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  cursor: help;
+  transition: background 180ms ease;
+}
+
+.heatKey:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px var(--color-primary);
+  z-index: 2;
+}
