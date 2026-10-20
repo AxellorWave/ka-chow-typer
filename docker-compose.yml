@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kachow}
       POSTGRES_DB: ${POSTGRES_DB:-kachow}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -24,8 +24,10 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-kachow}:${POSTGRES_PASSWORD:-kachow}@db:5432/${POSTGRES_DB:-kachow}
       FLASK_APP: wsgi
+      FLASK_DEBUG: "1"
+      JWT_COOKIE_SECURE: "false"
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     volumes:
       - ./backend:/app
     depends_on:
@@ -39,7 +41,7 @@ services:
     environment:
       VITE_PROXY_TARGET: http://backend:5000
     ports:
-      - "5173:5173"
+      - "127.0.0.1:5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
