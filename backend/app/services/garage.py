@@ -8,7 +8,8 @@ from app.models.enums import GarageSlot, UnlockType
 SLOTS = [slot.value for slot in GarageSlot]
 
 DEFAULT_CONFIG = {
-    GarageSlot.COLOR.value: "color_red",
+    GarageSlot.HERO.value: "hero_mcqueen",
+    GarageSlot.COLOR.value: "color_native",
     GarageSlot.DECAL.value: "decal_bolt",
     GarageSlot.WHEELS.value: "wheels_stock",
     GarageSlot.SPOILER.value: "spoiler_none",

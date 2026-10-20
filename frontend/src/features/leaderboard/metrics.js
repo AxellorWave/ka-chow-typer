@@ -30,5 +30,3 @@ export const PERIODS = {
   week: 'Неделя',
   all: 'Всё время',
 }
-
-export const MEDALS = { 1: '🥇', 2: '🥈', 3: '🥉' }

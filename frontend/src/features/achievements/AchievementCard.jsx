@@ -9,13 +9,21 @@ const dateFormat = new Intl.DateTimeFormat('ru-RU', {
 })
 
 export default function AchievementCard({ achievement }) {
-  const { title, description, icon, unlocked, unlocked_at: unlockedAt, progress } = achievement
+  const {
+    code,
+    title,
+    description,
+    icon,
+    unlocked,
+    unlocked_at: unlockedAt,
+    progress,
+  } = achievement
   const cumulative = progress.target > 1
   const percent = Math.min(100, (progress.current / progress.target) * 100)
 
   return (
     <li className={unlocked ? `${styles.card} ${styles.unlocked}` : styles.card}>
-      <AchievementIcon icon={icon} unlocked={unlocked} />
+      <AchievementIcon code={code} icon={icon} unlocked={unlocked} />
       <div className={styles.body}>
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.description}>{description}</p>

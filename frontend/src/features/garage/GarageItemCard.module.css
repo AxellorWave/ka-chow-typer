@@ -63,3 +63,8 @@
     transition: none;
   }
 }
+
+.car {
+  width: 120px;
+  max-height: 72px;
+}

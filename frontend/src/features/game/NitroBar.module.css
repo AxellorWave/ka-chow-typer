@@ -1,0 +1,51 @@
+.nitro {
+  flex: 1 1 280px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.track {
+  flex: 1;
+  height: 16px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
+.fill {
+  height: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-sky) 0 8px,
+    color-mix(in srgb, var(--color-sky) 70%, var(--color-surface)) 8px 16px
+  );
+  transition: width 0.15s ease-out;
+}
+
+.nitro[data-full] .track {
+  box-shadow: 0 0 12px var(--color-sky);
+}
+
+.value {
+  min-width: 3.5ch;
+  font-family: var(--font-arcade);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}

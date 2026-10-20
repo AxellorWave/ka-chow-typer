@@ -1,58 +1,31 @@
 import { useStore } from 'zustand'
-import { comboMultiplier } from '../game/scoring.js'
 import { useTypingMetrics } from '../typing/useTypingMetrics.js'
-import { formatDuration, formatNumber } from './format.js'
+import { formatDuration } from './format.js'
 import styles from './Hud.module.css'
+
+const pad = (value, length) => String(Math.max(0, Math.round(value))).padStart(length, '0')
 
 export default function Hud({ engine, tracker }) {
   const metrics = useTypingMetrics(engine)
   const score = useStore(tracker.store, (state) => state.score)
-  const combo = useStore(tracker.store, (state) => state.combo)
-  const multiplier = comboMultiplier(combo)
-  const nitro = Math.min(combo, 100)
 
   const items = [
-    { label: 'WPM', value: metrics.wpm.toFixed(0), accent: true },
-    { label: 'CPM', value: metrics.cpm.toFixed(0) },
-    { label: 'Точность', value: `${metrics.accuracy.toFixed(1)}%` },
-    { label: 'Ошибки', value: metrics.errors, error: metrics.errors > 0 },
+    { label: 'WPM', value: pad(metrics.wpm, 3) },
+    { label: 'CPM', value: pad(metrics.cpm, 3) },
+    { label: 'Точн.', value: pad(metrics.accuracy, 3) },
+    { label: 'Ошиб.', value: pad(metrics.errors, 2) },
     { label: 'Время', value: formatDuration(metrics.durationMs) },
-    { label: 'Очки', value: formatNumber(score) },
+    { label: 'Очки', value: pad(score, 4) },
   ]
 
   return (
-    <div className={styles.hud} aria-live="off">
+    <dl className={styles.hud}>
       {items.map((item) => (
-        <div
-          key={item.label}
-          className={[styles.item, item.accent && styles.accent, item.error && styles.error]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          <span className={styles.value}>{item.value}</span>
-          <span className={styles.label}>{item.label}</span>
+        <div key={item.label} className={styles.item}>
+          <dt className={styles.label}>{item.label}</dt>
+          <dd className={styles.value}>{item.value}</dd>
         </div>
       ))}
-      <div className={`${styles.item} ${styles.combo}`} data-tier={multiplier}>
-        <span className={styles.value}>×{multiplier}</span>
-        <span className={styles.label}>Комбо {combo}</span>
-      </div>
-      <div className={styles.nitro}>
-        <div className={styles.nitroHeader}>
-          <span>⚡ НИТРО</span>
-          <span>{nitro}%</span>
-        </div>
-        <div
-          className={styles.nitroTrack}
-          role="progressbar"
-          aria-label="Заряд нитро"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={nitro}
-        >
-          <div className={styles.nitroFill} style={{ width: `${nitro}%` }} />
-        </div>
-      </div>
-    </div>
+    </dl>
   )
 }

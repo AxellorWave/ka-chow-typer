@@ -34,8 +34,15 @@ export default function KeyboardPanel({ engine, lang = 'ru' }) {
           {showHands ? 'Скрыть руки' : 'Показать руки'}
         </button>
       </div>
-      {showKeyboard && <VirtualKeyboard engine={engine} layout={layout} />}
-      {showHands && <HandsHint engine={engine} layout={layout} />}
+      <div className={styles.body}>
+        {showKeyboard && <VirtualKeyboard engine={engine} layout={layout} />}
+        {showHands && (
+          <aside className={styles.handsCard}>
+            <span className={styles.cardTitle}>Руки</span>
+            <HandsHint engine={engine} layout={layout} />
+          </aside>
+        )}
+      </div>
     </section>
   )
 }

@@ -8,53 +8,61 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
   color: var(--color-text);
   text-decoration: none;
 }
 
-.avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--color-accent);
-  background: var(--color-primary);
-  color: var(--color-surface);
-  font-family: var(--font-display);
-  object-fit: cover;
-}
-
-.info {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.nickname {
-  font-weight: 600;
+.profile:hover {
+  background: var(--color-accent);
 }
 
 .level {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  transform: rotate(-4deg);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  object-fit: cover;
+}
+
+.nickname {
+  font-weight: 700;
 }
 
 .car {
   display: inline-flex;
+  max-height: 28px;
 }
 
 .streak {
   display: inline-flex;
   padding: var(--space-1) var(--space-2);
+  border: 2px solid transparent;
   border-radius: 999px;
-  background: var(--color-bg);
+  color: var(--color-text);
   text-decoration: none;
 }
 
 .streak:hover {
-  background: var(--color-gold);
+  border-color: var(--color-border);
 }
 
 .login,
@@ -66,9 +74,24 @@
 }
 
 .login {
+  border: 2px solid var(--color-border);
   background: var(--color-primary);
-  color: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  color: var(--color-paper);
+  box-shadow: 3px 3px 0 var(--color-border);
+}
+
+.loginGhost {
+  padding: var(--space-2) var(--space-4);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.loginGhost:hover {
+  background: var(--color-surface-2);
 }
 
 .login:hover {
@@ -76,7 +99,7 @@
 }
 
 .logout {
-  border: 2px solid var(--color-text-muted);
+  border: 2px solid transparent;
   background: transparent;
   color: var(--color-text-muted);
 }

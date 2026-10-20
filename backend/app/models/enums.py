@@ -23,6 +23,7 @@ class OAuthProvider(StrEnum):
 
 
 class GarageSlot(StrEnum):
+    HERO = "hero"
     COLOR = "color"
     DECAL = "decal"
     WHEELS = "wheels"

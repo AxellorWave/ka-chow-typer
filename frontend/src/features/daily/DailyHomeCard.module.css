@@ -1,87 +1,49 @@
-.section {
+.banner {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 260px;
-  gap: var(--space-4);
-  align-items: stretch;
-}
-
-.section:has(> :only-child) {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.daily {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-3);
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--space-6);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-hud);
+  box-shadow: var(--shadow-card);
+  color: var(--color-paper);
 }
 
 .title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.75rem;
-  color: var(--color-primary);
+  font-family: var(--font-arcade);
+  font-size: 0.875rem;
+  text-transform: uppercase;
 }
 
-.footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--space-2);
-  margin: 0;
-  color: var(--color-text-muted);
-  font-weight: 600;
-}
-
-.link {
-  color: var(--color-primary);
-  font-weight: 800;
+.title a {
+  color: var(--color-hud-text);
   text-decoration: none;
 }
 
-.link:hover {
-  text-decoration: underline;
-}
-
-.streak {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-6);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-  text-align: center;
-}
-
-.streakText {
+.text {
   margin: 0;
-  font-weight: 800;
+  line-height: 1.5;
 }
 
-.streakBest {
-  margin: 0;
-  font-size: 0.875rem;
-  color: var(--color-text-muted);
+.banner :global(time) {
+  font-family: var(--font-arcade);
+  color: var(--color-sky);
 }
 
-@media (max-width: 800px) {
-  .section {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.banner :global(span) {
+  color: inherit;
+}
 
-  .streak {
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: var(--space-4);
+.ride {
+  min-width: 120px;
+}
+
+@media (max-width: 900px) {
+  .banner {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 }

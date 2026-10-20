@@ -42,7 +42,7 @@
 
 .primary {
   background: var(--color-primary);
-  color: var(--color-surface);
+  color: var(--color-paper);
 }
 
 .primary:hover {

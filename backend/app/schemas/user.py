@@ -1,6 +1,6 @@
 from marshmallow import Schema, fields
 
-from app.services.leveling import max_difficulty, unlocked_modes, xp_to_next_level
+from app.services.leveling import max_difficulty, unlocked_modes, xp_for_level, xp_to_next_level
 
 
 class UserSchema(Schema):
@@ -11,6 +11,8 @@ class UserSchema(Schema):
     xp = fields.Integer()
     level = fields.Integer()
     xp_to_next = fields.Method("get_xp_to_next")
+    level_xp = fields.Method("get_level_xp")
+    next_level_xp = fields.Method("get_next_level_xp")
     unlocked_modes = fields.Method("get_unlocked_modes")
     max_difficulty = fields.Method("get_max_difficulty")
     streak_current = fields.Integer()
@@ -22,6 +24,12 @@ class UserSchema(Schema):
 
     def get_xp_to_next(self, user):
         return xp_to_next_level(user.xp)
+
+    def get_level_xp(self, user):
+        return xp_for_level(user.level)
+
+    def get_next_level_xp(self, user):
+        return xp_for_level(user.level + 1)
 
     def get_unlocked_modes(self, user):
         return unlocked_modes(user.level)

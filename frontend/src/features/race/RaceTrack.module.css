@@ -1,26 +1,79 @@
 .track {
-  --car-width: clamp(72px, 12vw, 112px);
+  --car-width: clamp(56px, min(12vw, 11vh), 112px);
   --label-height: 16px;
-  --lane-height: calc(var(--car-width) * 0.42 + var(--label-height));
+  --lane-height: calc(var(--car-width) * 0.55 + var(--label-height));
   --finish-width: 18px;
+  overflow: hidden;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--track-asphalt);
+  box-shadow: var(--shadow-card);
+}
+
+.sky {
+  position: relative;
+  height: 34px;
+  overflow: hidden;
+  background: linear-gradient(var(--color-horizon) 0 55%, var(--track-edge) 55% 100%);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.ribbon {
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  display: flex;
+  width: max-content;
+}
+
+.ribbonItem {
+  display: flex;
+  align-items: center;
+}
+
+.ribbonLabel {
+  padding: 1px var(--space-2);
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+
+.ribbonItem:nth-child(odd) .ribbonLabel {
+  background: var(--color-primary);
+  color: var(--color-accent);
+}
+
+.ribbonItem:nth-child(even) .ribbonLabel {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+.ribbonStar {
+  padding: 1px var(--space-2);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+
+.track[data-moving] .ribbon {
+  animation: ribbon 18s linear infinite;
+}
+
+.road {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: var(--space-2) calc(var(--finish-width) + var(--space-3)) var(--space-2) var(--space-3);
-  overflow: hidden;
-  border-radius: var(--radius-md);
-  border-top: 4px solid var(--track-edge);
-  border-bottom: 4px solid var(--track-edge);
-  background-color: var(--track-asphalt);
   background-image: linear-gradient(90deg, var(--track-line) 50%, transparent 50%);
   background-size: 48px 3px;
   background-repeat: repeat-x;
-  background-position: 0 50%;
-  box-shadow: var(--shadow-card);
+  background-position: 0 60%;
 }
 
-.track[data-moving] {
+.track[data-moving] .road {
   animation: road 0.6s linear infinite;
 }
 
@@ -78,9 +131,10 @@
   text-overflow: ellipsis;
   line-height: var(--label-height);
   padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  color: var(--color-surface);
+  background: var(--color-surface);
+  color: var(--color-text);
   font-size: 0.7rem;
   font-weight: 600;
   white-space: nowrap;
@@ -109,32 +163,30 @@
   width: var(--car-width);
 }
 
-.slider[data-speed='cruise'] {
-  --wheel-speed: 0.6s;
-  --wheel-state: running;
+.slider[data-speed='cruise'] .car {
+  animation: rumble 0.5s ease-in-out infinite;
 }
 
-.slider[data-speed='fast'] {
-  --wheel-speed: 0.35s;
-  --wheel-state: running;
+.slider[data-speed='fast'] .car {
+  animation: rumble 0.3s ease-in-out infinite;
 }
 
-.slider[data-speed='turbo'] {
-  --wheel-speed: 0.18s;
-  --wheel-state: running;
+.slider[data-speed='turbo'] .car {
+  animation: rumble 0.16s ease-in-out infinite;
 }
 
 .slider[data-finished] {
   transition: transform 0.5s ease-out;
 }
 
-.skid {
+.skid,
+.slider[data-speed] .skid {
   animation: skid 0.35s ease-out;
 }
 
 .ghost {
-  opacity: 0.45;
-  filter: grayscale(0.6);
+  opacity: 0.4;
+  filter: grayscale(1);
 }
 
 .kachow {
@@ -149,9 +201,21 @@
   animation: pop 0.45s ease-out;
 }
 
+@keyframes rumble {
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+
 @keyframes road {
   to {
-    background-position: -48px 50%;
+    background-position: -48px 60%;
+  }
+}
+
+@keyframes ribbon {
+  to {
+    transform: translateX(-33.333%);
   }
 }
 
@@ -178,7 +242,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .track[data-moving],
+  .slider .car,
+  .track[data-moving] .road,
+  .track[data-moving] .ribbon,
   .skid,
   .kachow {
     animation: none;
@@ -186,5 +252,16 @@
 
   .slider {
     transition: none;
+  }
+}
+
+@media (max-height: 860px) {
+  .sky {
+    height: 24px;
+  }
+
+  .road {
+    padding-top: var(--space-1);
+    padding-bottom: var(--space-1);
   }
 }

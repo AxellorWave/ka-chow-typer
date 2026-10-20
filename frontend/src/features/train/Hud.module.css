@@ -1,66 +1,67 @@
 .hud {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0;
+  padding: var(--space-3) var(--space-2);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-hud);
+  box-shadow: var(--shadow-card);
 }
 
 .item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: var(--space-2) var(--space-1);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  gap: var(--space-2);
+  padding: 0 var(--space-3);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.value {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 1.375rem;
-  font-variant-numeric: tabular-nums;
+.item:first-child {
+  border-left: none;
 }
 
 .label {
-  font-size: 0.75rem;
-  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--color-hud-label);
+}
+
+.value {
+  margin: 0;
+  font-family: var(--font-arcade);
+  font-size: clamp(0.8rem, min(1.9vw, 3vh), 1.4rem);
+  color: var(--color-hud-text);
+  text-shadow:
+    2px 2px 0 var(--color-primary-dark),
+    var(--glow);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
-}
-
-.accent .value {
-  color: var(--color-primary);
-}
-
-.error .value {
-  color: var(--color-error);
-}
-
-.combo {
-  transition: background 0.2s ease;
-}
-
-.combo[data-tier='2'] {
-  background: var(--color-accent);
-}
-
-.combo[data-tier='3'] {
-  background: var(--color-accent-dark);
-}
-
-.combo[data-tier='5'] {
-  background: var(--color-primary);
-}
-
-.combo[data-tier='5'] .value,
-.combo[data-tier='5'] .label {
-  color: var(--color-surface);
 }
 
 @media (max-width: 720px) {
   .hud {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: var(--space-3);
+  }
+
+  .item:nth-child(4) {
+    border-left: none;
+  }
+}
+
+@media (max-height: 860px) {
+  .hud {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .item {
+    gap: 2px;
+  }
+
+  .label {
+    font-size: 0.625rem;
   }
 }

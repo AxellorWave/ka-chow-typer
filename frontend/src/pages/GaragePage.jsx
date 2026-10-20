@@ -10,11 +10,12 @@ import { useGarage, useSaveGarage } from '../features/garage/useGarage.js'
 import styles from './GaragePage.module.css'
 
 const SLOT_LABELS = {
+  hero: 'Машина',
   color: 'Цвет',
-  decal: 'Наклейка',
   wheels: 'Диски',
-  spoiler: 'Спойлер',
 }
+
+const SLOTS = Object.keys(SLOT_LABELS)
 
 const saveErrorMessage = (error) =>
   error.response?.data?.message ?? 'Не удалось сохранить машинку. Попробуйте ещё раз.'
@@ -23,7 +24,7 @@ export default function GaragePage() {
   const { data, isPending, isError, refetch } = useGarage()
   const save = useSaveGarage()
   const pushToast = useToastStore((state) => state.push)
-  const [slot, setSlot] = useState('color')
+  const [slot, setSlot] = useState('hero')
   const [changes, setChanges] = useState({})
 
   const saved = data?.config ?? {}
@@ -62,8 +63,8 @@ export default function GaragePage() {
       <header className={styles.heading}>
         <h1 className={styles.title}>Гараж</h1>
         <p className={styles.subtitle}>
-          Перекрась машину и поставь новые диски и спойлер. Новые детали открываются с уровнем и
-          ачивками.
+          Выбери героя, перекрась кузов и поставь новые диски. Новые машины и детали открываются с
+          уровнем и ачивками.
         </p>
       </header>
 
@@ -104,10 +105,9 @@ export default function GaragePage() {
             <div className={styles.tabs}>
               <SegmentedControl
                 label="Слот"
-                options={data.slots.map((group) => ({
-                  value: group.slot,
-                  label: SLOT_LABELS[group.slot] ?? group.slot,
-                }))}
+                options={data.slots
+                  .filter((group) => SLOTS.includes(group.slot))
+                  .map((group) => ({ value: group.slot, label: SLOT_LABELS[group.slot] }))}
                 value={slot}
                 onChange={setSlot}
               />

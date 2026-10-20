@@ -1,46 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Press+Start+2P&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 :root {
-  --color-primary: #d0021b;
-  --color-primary-dark: #9b0014;
-  --color-accent: #ffd500;
-  --color-accent-dark: #e0a800;
-  --color-bg: #fff8ec;
-  --color-surface: #ffffff;
-  --color-text: #1a1a1a;
-  --color-text-muted: #5b5b5b;
-  --color-success: #1fa34a;
-  --color-error: #e53935;
-  --color-cursor: #ffd500;
+  --color-primary: #d42a1c;
+  --color-primary-dark: #8f160c;
+  --color-accent: #ffb81c;
+  --color-accent-dark: #e07a00;
+  --color-bg: #efe4cf;
+  --color-surface: #fbf5e8;
+  --color-surface-2: #e6d8bc;
+  --color-border: #1a120e;
+  --color-ink: #1a120e;
+  --color-paper: #fbf5e8;
+  --color-text: #1a120e;
+  --color-text-muted: #5a4a3e;
+  --color-success: #1d6b3a;
+  --color-error: #c8102e;
+  --color-error-bg: #ffd3d9;
+  --color-cursor: #e07a00;
+  --color-sky: #2a8c9c;
+  --color-sand: #d9b98a;
+  --color-chrome: #b9c0ca;
+  --color-horizon: #8fcbd2;
+  --color-asphalt: #3a3330;
+  --color-hud: #1a120e;
+  --color-hud-text: #ffd23f;
+  --color-hud-label: #b9b0a4;
   --color-vk: #0077ff;
   --color-yandex: #fc3f1d;
-  --color-gold: #fff1b8;
-  --color-silver: #eef1f5;
-  --color-bronze: #f8e1cc;
+  --color-gold: #ffe6a3;
+  --color-silver: #dfe3e8;
+  --color-bronze: #f0cfae;
 
-  --car-red: #d7262b;
-  --car-yellow: #f6c304;
-  --car-blue: #5ba4d9;
+  --car-red: #d42a1c;
+  --car-yellow: #ffb81c;
+  --car-blue: #2a8c9c;
   --car-rust: #8b4a2b;
-  --car-black: #1c1f26;
+  --car-black: #1a120e;
 
-  --track-asphalt: #3b3d42;
-  --track-edge: #f2e6cf;
-  --track-line: #ffd500;
-  --track-checker-dark: #1a1a1a;
-  --track-checker-light: #ffffff;
-  --flame-core: #ffd500;
-  --flame-outer: #ff6a00;
+  --track-asphalt: var(--color-asphalt);
+  --track-edge: var(--color-sand);
+  --track-line: var(--color-accent);
+  --track-checker-dark: var(--color-border);
+  --track-checker-light: var(--color-surface);
+  --flame-core: #ffd23f;
+  --flame-outer: var(--color-accent-dark);
 
-  --finger-pinky: #f9c0d2;
-  --finger-ring: #ffd9a3;
-  --finger-middle: #c4e8b3;
-  --finger-index: #b5daf7;
-  --finger-thumb: #dccdf2;
+  --finger-left-pinky: oklch(0.86 0.09 15);
+  --finger-left-ring: oklch(0.86 0.09 60);
+  --finger-left-middle: oklch(0.88 0.09 100);
+  --finger-left-index: oklch(0.86 0.09 145);
+  --finger-right-index: oklch(0.86 0.09 195);
+  --finger-right-middle: oklch(0.86 0.09 245);
+  --finger-right-ring: oklch(0.86 0.09 290);
+  --finger-right-pinky: oklch(0.86 0.09 340);
+  --finger-thumb: oklch(0.88 0.01 70);
+  --finger-pinky: var(--finger-left-pinky);
+  --finger-ring: var(--finger-left-ring);
+  --finger-middle: var(--finger-left-middle);
+  --finger-index: var(--finger-left-index);
 
-  --font-display: 'Bungee', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-display: 'Dela Gothic One', system-ui, sans-serif;
+  --font-body: 'Onest', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-arcade: 'Press Start 2P', ui-monospace, monospace;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -54,7 +76,59 @@
   --radius-md: 12px;
   --radius-lg: 20px;
 
-  --shadow-card: 0 4px 0 rgba(0, 0, 0, 0.15);
-  --shadow-key: 0 2px 0 rgba(0, 0, 0, 0.18);
+  --shadow-card: 4px 4px 0 #1a120e;
+  --shadow-key: 0 3px 0 #1a120e;
+  --texture: radial-gradient(rgba(26, 18, 14, 0.08) 1px, transparent 1.3px) 0 0 / 6px 6px;
+  --glow: 0 0 0 transparent;
   --content-width: 1200px;
+}
+
+[data-theme='night'] {
+  color-scheme: dark;
+
+  --color-primary: #e2483b;
+  --color-primary-dark: #b3332a;
+  --color-accent: #f0b43c;
+  --color-accent-dark: #d4842e;
+  --color-bg: #16120f;
+  --color-surface: #211b16;
+  --color-surface-2: #2b241e;
+  --color-border: #4a3f35;
+  --color-ink: #16120f;
+  --color-paper: #f4ecdf;
+  --color-text: #ece3d4;
+  --color-text-muted: #a99b88;
+  --color-success: #6cbf86;
+  --color-error: #ec6a62;
+  --color-error-bg: #3b1d1a;
+  --color-cursor: #f0b43c;
+  --color-sky: #4f9ea7;
+  --color-sand: #3a3128;
+  --color-chrome: #8f969f;
+  --color-horizon: #27383b;
+  --color-asphalt: #2a2420;
+  --color-hud: #110d0a;
+  --color-hud-text: #f0b43c;
+  --color-hud-label: #9a8d7c;
+  --color-gold: #4a3d20;
+  --color-silver: #34373b;
+  --color-bronze: #43301f;
+
+  --track-edge: var(--color-sand);
+  --track-checker-light: #d9cfc0;
+
+  --finger-left-pinky: oklch(0.48 0.07 15);
+  --finger-left-ring: oklch(0.48 0.07 60);
+  --finger-left-middle: oklch(0.5 0.07 100);
+  --finger-left-index: oklch(0.48 0.07 145);
+  --finger-right-index: oklch(0.48 0.07 195);
+  --finger-right-middle: oklch(0.48 0.07 245);
+  --finger-right-ring: oklch(0.48 0.07 290);
+  --finger-right-pinky: oklch(0.48 0.07 340);
+  --finger-thumb: oklch(0.42 0.01 70);
+
+  --shadow-card: 4px 4px 0 #0b0907;
+  --shadow-key: 0 3px 0 #0b0907;
+  --texture: radial-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1.3px) 0 0 / 6px 6px;
+  --glow: 0 0 0 transparent;
 }

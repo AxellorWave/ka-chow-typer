@@ -7,31 +7,157 @@ import LevelUpModal from '../effects/LevelUpModal.jsx'
 import { showAchievementToasts } from '../effects/toastStore.js'
 import { pitstopPath } from '../pitstop/pitstop.js'
 import { formatDuration, formatNumber } from './format.js'
+import { errorsWord, speedSegments, weakChars } from './runAnalysis.js'
+import cupBronze from '../../assets/design/cups/cup-bronze.png'
+import cupGold from '../../assets/design/cups/cup-gold.png'
+import cupSilver from '../../assets/design/cups/cup-silver.png'
 import { useSaveRun } from './useSaveRun.js'
 import styles from './ResultScreen.module.css'
 
-const CUP_NAMES = ['', 'бронзу', 'серебро', 'золото']
+const CUPS = [
+  { id: 1, name: 'Бронза', className: 'bronze', image: cupBronze },
+  { id: 2, name: 'Серебро', className: 'silver', image: cupSilver },
+  { id: 3, name: 'Золото', className: 'gold', image: cupGold },
+]
 
 function XpBar({ result }) {
   const span = Math.max(1, result.next_level_xp - result.level_xp)
   const progress = Math.min(100, ((result.xp - result.level_xp) / span) * 100)
   return (
-    <div className={styles.xp}>
-      <div className={styles.xpHeader}>
-        <span className={styles.xpGain}>+{formatNumber(result.xp_earned)} XP</span>
-        <span>
-          Уровень {result.level} · до следующего {formatNumber(result.xp_to_next)} XP
+    <div
+      className={styles.xpTrack}
+      role="progressbar"
+      aria-label={`До ${result.level + 1} уровня ${formatNumber(result.xp_to_next)} XP`}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(progress)}
+    >
+      <div className={styles.xpFill} style={{ '--progress': `${progress}%` }} />
+    </div>
+  )
+}
+
+function LevelCard({ result }) {
+  const previous = result.level - (result.levels_gained ?? 0)
+  return (
+    <div className={styles.levelCard} role={result.level_up ? 'status' : undefined}>
+      <div className={styles.levelHead}>
+        <span className={styles.levelTitle}>{result.level_up ? 'Level up!' : 'Опыт'}</span>
+        <span className={styles.levelGain}>+{formatNumber(result.xp_earned)} XP</span>
+      </div>
+      <div className={styles.levelRow}>
+        {result.level_up && (
+          <>
+            <span className={styles.levelOld}>{previous}</span>
+            <span className={styles.levelArrow} aria-hidden="true">
+              →
+            </span>
+          </>
+        )}
+        <span className={styles.levelNew}>{result.level}</span>
+        <span className={styles.levelNote}>
+          {result.level_up ? 'Новый уровень' : `Уровень ${result.level}`}
         </span>
       </div>
-      <div
-        className={styles.xpTrack}
-        role="progressbar"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(progress)}
-      >
-        <div className={styles.xpFill} style={{ '--progress': `${progress}%` }} />
+      <XpBar result={result} />
+      <span className={styles.levelHint}>
+        до {result.level + 1} уровня — {formatNumber(result.xp_to_next)} XP
+      </span>
+    </div>
+  )
+}
+
+function Cups({ cups }) {
+  return (
+    <div className={styles.cups}>
+      {CUPS.map((cup) => {
+        const won = cups.cups >= cup.id
+        const fresh = won && cups.cups - cups.new_cups < cup.id
+        return (
+          <div
+            key={cup.id}
+            className={[styles.cupCard, styles[cup.className], !won && styles.cupLocked]
+              .filter(Boolean)
+              .join(' ')}
+          >
+            <img src={cup.image} alt="" className={styles.cupIcon} />
+            <span className={styles.cupName}>{cup.name}</span>
+            {fresh && <span className={styles.cupNew}>Новый!</span>}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function SpeedChart({ segments, ghostWpm }) {
+  if (segments.length === 0) return null
+  const max = Math.max(...segments, ghostWpm ?? 0, 1)
+  const best = Math.max(...segments)
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardHead}>
+        <h2 className={styles.cardTitle}>Скорость по ходу заезда</h2>
+        {ghostWpm ? (
+          <span className={styles.cardHint}>— — призрак {Math.round(ghostWpm)} WPM</span>
+        ) : null}
       </div>
+      <div className={styles.chart} role="img" aria-label="Скорость по отрезкам заезда">
+        {ghostWpm ? (
+          <span className={styles.ghostLine} style={{ '--level': ghostWpm / max }} />
+        ) : null}
+        {segments.map((value, index) => (
+          <span
+            key={index}
+            className={value === best ? `${styles.chartBar} ${styles.chartBest}` : styles.chartBar}
+            style={{ '--height': value / max }}
+            title={`${value} WPM`}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function WeakChars({ items }) {
+  return (
+    <div className={styles.card}>
+      <h2 className={styles.cardLabel}>Слабые буквы</h2>
+      {items.length === 0 ? (
+        <p className={styles.cardEmpty}>Ни одной ошибки — чистый круг!</p>
+      ) : (
+        <ul className={styles.weak}>
+          {items.map((item) => (
+            <li key={item.char} className={styles.weakChip}>
+              <span className={styles.weakChar}>{item.char}</span>
+              {item.count} {errorsWord(item.count)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function NewAchievements({ items }) {
+  if (!items?.length) return null
+  return (
+    <div className={styles.card}>
+      <h2 className={styles.cardLabel}>Новые ачивки</h2>
+      <ul className={styles.achievements}>
+        {items.map((achievement) => (
+          <li key={achievement.code} className={styles.achievement}>
+            <span className={styles.achievementIcon} aria-hidden="true">
+              {achievement.icon}
+            </span>
+            <span>
+              <strong>{achievement.title}</strong>
+              <br />
+              <span className={styles.achievementText}>{achievement.description}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -57,38 +183,7 @@ function SaveStatus({ save }) {
     )
   }
   if (!save.data) return null
-
-  const result = save.data
-  return (
-    <div className={styles.rewards}>
-      {result.level_up && (
-        <div className={styles.levelUp} role="status">
-          <span className={styles.levelUpTitle}>Новый уровень!</span>
-          <span>Теперь ты на {result.level} уровне</span>
-        </div>
-      )}
-      <XpBar result={result} />
-      {result.cups?.new_cups > 0 && (
-        <p className={styles.cup}>🏆 Новый кубок: {CUP_NAMES[result.cups.cups]}</p>
-      )}
-      {result.new_achievements?.length > 0 && (
-        <ul className={styles.achievements}>
-          {result.new_achievements.map((achievement) => (
-            <li key={achievement.code} className={styles.achievement}>
-              <span className={styles.achievementIcon} aria-hidden="true">
-                {achievement.icon}
-              </span>
-              <span>
-                <strong>{achievement.title}</strong>
-                <br />
-                <span className={styles.achievementText}>{achievement.description}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  )
+  return <LevelCard result={save.data} />
 }
 
 export default function ResultScreen({
@@ -97,7 +192,7 @@ export default function ResultScreen({
   user,
   onAgain,
   onChangeSetup,
-  changeLabel = 'Сменить режим',
+  changeLabel = 'К выбору заезда',
   againLabel = 'Ещё заезд',
   showPitstop = true,
   renderReport,
@@ -125,39 +220,72 @@ export default function ResultScreen({
   }, [onAgain])
 
   const metrics = [
-    { label: 'WPM', value: payload.wpm.toFixed(1), accent: true },
     { label: 'CPM', value: payload.cpm.toFixed(0) },
-    { label: 'Точность', value: `${payload.accuracy.toFixed(1)}%` },
+    { label: 'Точность', value: `${Math.round(payload.accuracy)}%` },
     { label: 'Ошибки', value: payload.errors },
     { label: 'Время', value: formatDuration(payload.duration_ms) },
     { label: 'Очки', value: formatNumber(payload.score) },
-    { label: 'Макс. комбо', value: payload.max_combo },
-    { label: 'Символов', value: payload.correct_chars },
   ]
+  const segments = speedSegments(payload.keystrokes ?? [], payload.duration_ms)
+  const weak = weakChars(payload.text ?? '', payload.keystrokes ?? [])
 
   return (
     <section className={styles.result} aria-labelledby="result-title">
-      <h1 id="result-title" className={styles.title}>
-        Финиш!
-      </h1>
-
-      <dl className={styles.metrics}>
-        {metrics.map((metric) => (
-          <div
-            key={metric.label}
-            className={metric.accent ? `${styles.metric} ${styles.accent}` : styles.metric}
-          >
-            <dt className={styles.metricLabel}>{metric.label}</dt>
-            <dd className={styles.metricValue}>{metric.value}</dd>
+      <div className={styles.grid}>
+        <div className={styles.side}>
+          <div className={styles.hero}>
+            <h1 id="result-title" className={styles.heroLabel}>
+              Финиш
+            </h1>
+            <p className={styles.heroValue}>
+              {Math.round(payload.wpm)}
+              <span className={styles.heroUnit}>WPM</span>
+            </p>
+            <span className={styles.heroCombo}>макс. комбо {payload.max_combo}</span>
           </div>
-        ))}
-      </dl>
 
-      {ghost && <GhostVerdict ghost={ghost} durationMs={payload.duration_ms} />}
+          {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
 
-      {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
+          {save.data?.cups && <Cups cups={save.data.cups} />}
+        </div>
 
-      {renderReport?.(save)}
+        <div className={styles.main}>
+          <dl className={styles.metrics}>
+            {metrics.map((metric) => (
+              <div key={metric.label} className={styles.metric}>
+                <dt className={styles.metricLabel}>{metric.label}</dt>
+                <dd className={styles.metricValue}>{metric.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <SpeedChart segments={segments} ghostWpm={ghost?.wpm} />
+
+          {ghost && <GhostVerdict ghost={ghost} durationMs={payload.duration_ms} />}
+
+          <div className={styles.cardsRow}>
+            <NewAchievements items={save.data?.new_achievements} />
+            <WeakChars items={weak} />
+          </div>
+
+          {renderReport?.(save)}
+
+          <div className={styles.actions}>
+            <Button onClick={onAgain}>{againLabel}</Button>
+            {showPitstop && (
+              <Button variant="accent" onClick={() => navigate(pitstopPath(payload.lang))}>
+                Пит-стоп
+              </Button>
+            )}
+            <Button variant="ghost" onClick={onChangeSetup}>
+              {changeLabel}
+            </Button>
+            <span className={styles.hint}>
+              <kbd>Enter</kbd> — {againLabel.toLowerCase()}
+            </span>
+          </div>
+        </div>
+      </div>
 
       {save.data && (
         <LevelUpModal
@@ -167,19 +295,6 @@ export default function ResultScreen({
           onClose={closeLevelUp}
         />
       )}
-
-      <div className={styles.actions}>
-        <Button onClick={onAgain}>{againLabel}</Button>
-        {showPitstop && (
-          <Button variant="accent" onClick={() => navigate(pitstopPath(payload.lang))}>
-            Пит-стоп
-          </Button>
-        )}
-        <button type="button" className={styles.link} onClick={onChangeSetup}>
-          {changeLabel}
-        </button>
-        <span className={styles.hint}>Enter — {againLabel.toLowerCase()}</span>
-      </div>
     </section>
   )
 }

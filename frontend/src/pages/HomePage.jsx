@@ -1,22 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
-import { getHealth } from '../api/health.js'
+import { useNavigate } from 'react-router-dom'
 import DailyHomeCard from '../features/daily/DailyHomeCard.jsx'
-import PitstopHomeCard from '../features/pitstop/PitstopHomeCard.jsx'
+import HomeCards from '../features/home/HomeCards.jsx'
+import HomeHero from '../features/home/HomeHero.jsx'
 import styles from './HomePage.module.css'
 
 export default function HomePage() {
-  const { data, isError, isLoading } = useQuery({ queryKey: ['health'], queryFn: getHealth })
-
-  const status = isLoading ? 'проверяем…' : isError ? 'нет связи' : data.status
-
+  const navigate = useNavigate()
   return (
     <div className={styles.page}>
-      <section className={styles.hero}>
-        <h1 className={styles.title}>Ka-chow!</h1>
-        <p className={styles.subtitle}>Тренажёр слепой печати. Скорость. Я — скорость.</p>
-        <p className={styles.status}>API: {status}</p>
-      </section>
-      <PitstopHomeCard />
+      <HomeHero onStart={() => navigate('/train')} />
+      <HomeCards />
       <DailyHomeCard />
     </div>
   )

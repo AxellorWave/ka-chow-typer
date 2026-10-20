@@ -22,6 +22,9 @@ export default function Layout() {
   const isNavigating = useNavigation().state !== 'idle'
   const soundEnabled = useSettingsStore((state) => state.soundEnabled)
   const toggleSound = useSettingsStore((state) => state.toggleSound)
+  const theme = useSettingsStore((state) => state.theme)
+  const toggleTheme = useSettingsStore((state) => state.toggleTheme)
+  const dark = theme === 'dark'
 
   useEffect(() => {
     if (!menuOpen) {
@@ -42,9 +45,15 @@ export default function Layout() {
     <div className={styles.shell}>
       {isNavigating && <div className={styles.progress} role="progressbar" />}
       <header className={styles.header}>
-        <Link to="/" className={styles.logo} onClick={closeMenu}>
-          <span className={styles.bolt}>⚡</span>
-          KaChowTyper
+        <Link
+          to="/"
+          className={styles.logo}
+          onClick={closeMenu}
+          aria-label="KaChowTyper, на главную"
+        >
+          <span className={styles.logoText}>
+            KACHOW<span className={styles.logoAccent}>TYPER</span>
+          </span>
         </Link>
         <button
           type="button"
@@ -73,6 +82,22 @@ export default function Layout() {
           <div className={styles.headerActions}>
             <button
               type="button"
+              className={styles.themeButton}
+              onClick={(event) => {
+                event.stopPropagation()
+                toggleTheme()
+              }}
+              aria-label={dark ? 'Включить светлую тему' : 'Включить тёмную тему'}
+              aria-pressed={dark}
+              title={dark ? 'Светлая тема' : 'Тёмная тема'}
+            >
+              <span className={styles.themeIcon} aria-hidden="true">
+                {dark ? '☀' : '☾'}
+              </span>
+              <span className={styles.themeLabel}>{dark ? 'Светлая' : 'Тёмная'}</span>
+            </button>
+            <button
+              type="button"
               className={styles.soundButton}
               onClick={(event) => {
                 event.stopPropagation()
@@ -82,8 +107,8 @@ export default function Layout() {
               aria-pressed={soundEnabled}
               title={soundEnabled ? 'Выключить звук' : 'Включить звук'}
             >
-              <span aria-hidden="true">{soundEnabled ? '🔊' : '🔇'}</span>
-              <span>{soundEnabled ? 'Звук включён' : 'Без звука'}</span>
+              <span className={styles.switch} aria-hidden="true" />
+              <span>Звук</span>
             </button>
             <UserMenu />
           </div>

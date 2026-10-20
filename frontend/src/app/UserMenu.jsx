@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { logout } from '../api/auth.js'
-import CarBadge from '../components/CarBadge.jsx'
+import CarModel from '../components/car/CarModel.jsx'
 import StreakFlame from '../features/daily/StreakFlame.jsx'
 import { useAuthStore } from '../store/authStore.js'
 import styles from './UserMenu.module.css'
@@ -24,30 +24,32 @@ export default function UserMenu() {
 
   if (!user) {
     return (
-      <Link to="/login" className={styles.login}>
-        Войти
-      </Link>
+      <div className={styles.user}>
+        <Link to="/login" className={styles.loginGhost}>
+          Войти
+        </Link>
+        <Link to="/register" className={styles.login}>
+          Регистрация
+        </Link>
+      </div>
     )
   }
 
   return (
     <div className={styles.user}>
+      <Link to="/daily" className={styles.streak} aria-label={`Стрик: ${user.streak_current ?? 0}`}>
+        <StreakFlame count={user.streak_current ?? 0} />
+      </Link>
       <Link to="/profile" className={styles.profile}>
+        <span className={styles.level} aria-label={`Уровень ${user.level}`}>
+          {user.level}
+        </span>
         {user.avatar_url ? (
           <img src={user.avatar_url} alt="" className={styles.avatar} />
         ) : (
-          <span className={styles.avatar}>{user.nickname.charAt(0).toUpperCase()}</span>
+          <CarModel config={user.car_config} className={styles.car} width={44} />
         )}
-        <span className={styles.info}>
-          <span className={styles.nickname}>{user.nickname}</span>
-          <span className={styles.level}>Ур. {user.level}</span>
-        </span>
-        <span className={styles.car}>
-          <CarBadge config={user.car_config} width={44} />
-        </span>
-      </Link>
-      <Link to="/daily" className={styles.streak} aria-label={`Стрик: ${user.streak_current ?? 0}`}>
-        <StreakFlame count={user.streak_current ?? 0} />
+        <span className={styles.nickname}>{user.nickname}</span>
       </Link>
       <button type="button" className={styles.logout} onClick={handleLogout}>
         Выйти

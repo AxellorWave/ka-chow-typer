@@ -5,6 +5,17 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>KaChowTyper</title>
+    <script>
+      try {
+        const saved = JSON.parse(localStorage.getItem('kachow-settings') || '{}').state || {}
+        const dark = saved.theme
+          ? saved.theme === 'dark'
+          : window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (dark) document.documentElement.dataset.theme = 'night'
+      } catch {
+        document.documentElement.removeAttribute('data-theme')
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
