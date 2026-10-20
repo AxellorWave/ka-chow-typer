@@ -3,6 +3,7 @@ from flask import Blueprint
 from app.api.achievements import achievements_bp
 from app.api.auth import auth_bp
 from app.api.daily import daily_bp
+from app.api.docs import docs_bp
 from app.api.garage import garage_bp
 from app.api.ghost import ghost_bp
 from app.api.health import health_bp
@@ -17,6 +18,7 @@ from app.api.uploads import uploads_bp
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 api_bp.register_blueprint(health_bp)
+api_bp.register_blueprint(docs_bp)
 api_bp.register_blueprint(auth_bp)
 api_bp.register_blueprint(oauth_bp)
 api_bp.register_blueprint(texts_bp)
