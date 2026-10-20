@@ -14,7 +14,7 @@ function validateEmail(email) {
   return null
 }
 
-function validateNickname(nickname) {
+export function validateNickname(nickname) {
   const value = nickname.trim()
   if (!value) return REQUIRED
   if (value.length < 3 || value.length > 32) return 'От 3 до 32 символов'

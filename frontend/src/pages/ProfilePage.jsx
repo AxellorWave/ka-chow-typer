@@ -5,6 +5,7 @@ import { getSummary } from '../api/stats.js'
 import EmptyState from '../components/EmptyState.jsx'
 import QueryError from '../components/QueryError.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import PilotSection from '../features/profile/PilotSection.jsx'
 import ProfileHeader from '../features/stats/ProfileHeader.jsx'
 import ProgressCharts from '../features/stats/ProgressCharts.jsx'
 import RunHistory from '../features/stats/RunHistory.jsx'
@@ -26,6 +27,7 @@ export default function ProfilePage() {
   return (
     <div className={styles.page}>
       <ProfileHeader user={user ?? sessionUser} />
+      <PilotSection />
 
       {summary.isPending && <Skeleton height="96px" />}
       {summary.isError && <QueryError onRetry={summary.refetch} />}
