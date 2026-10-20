@@ -13,6 +13,7 @@ import Hud from './Hud.jsx'
 import PauseDialog from './PauseDialog.jsx'
 import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
+import { useCapsLock } from '../typing/useCapsLock.js'
 import {
   startEngineSound,
   updateEngineSound,
@@ -29,6 +30,7 @@ const MUSIC = 'music-race-loop'
 const MUSIC_FADE_MS = 500
 const VOICE_OFFSETS = { 3: 0, 2: 1.04, 1: 2.12, 0: 3.22 }
 const DANGER_STREAK = 3
+const ENGINE_IDLE_MS = 1500
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -109,6 +111,7 @@ export default function RunScreen({
 
   const finishTimerRef = useRef(null)
   const errorStreakRef = useRef(0)
+  const lastHitRef = useRef(0)
   const { ghost, missing: ghostMissing } = useGhost(run, ghostWho)
 
   const finish = useCallback(
@@ -143,6 +146,7 @@ export default function RunScreen({
     onCorrect: () => {
       tracker.hit(bonusActive ? TURBO_BONUS.multiplier : 1)
       errorStreakRef.current = 0
+      lastHitRef.current = performance.now()
       playSound('sfx-key')
 
       if (useSettingsStore.getState().soundEnabled) {
@@ -221,8 +225,12 @@ export default function RunScreen({
     if (phase !== 'running' || paused || !soundEnabled) return undefined
 
     const timer = setInterval(() => {
-      const wpm = engine.getMetrics(performance.now()).wpm
-      updateEngineSound(wpm)
+      const now = performance.now()
+      if (now - lastHitRef.current > ENGINE_IDLE_MS) {
+        stopEngineSound()
+        return
+      }
+      updateEngineSound(engine.getMetrics(now).wpm)
     }, 250)
 
     return () => clearInterval(timer)
@@ -314,6 +322,7 @@ export default function RunScreen({
   }, [openPause, resume])
 
   const isCode = run.mode === 'code'
+  const capsLock = useCapsLock()
 
   return (
     <section ref={sectionRef} className={styles.run} aria-label="Заезд">
@@ -325,6 +334,11 @@ export default function RunScreen({
         <ComboMeter tracker={tracker} />
         <NitroBar tracker={tracker} />
         <BonusChip seconds={bonusSeconds} />
+        {capsLock && (
+          <span className={styles.capsLock} role="alert">
+            Включён CapsLock
+          </span>
+        )}
         {ghostMissing && (
           <span className={styles.ghostMissing} role="status">
             👻 Призрака для этого заезда пока нет
@@ -349,6 +363,9 @@ export default function RunScreen({
       <footer className={styles.footer}>
         <span>
           <kbd>Esc</kbd> — пит-стоп
+        </span>
+        <span>
+          <kbd>Backspace</kbd> не нужен — сразу жмите верную клавишу
         </span>
         {isCode && (
           <span>

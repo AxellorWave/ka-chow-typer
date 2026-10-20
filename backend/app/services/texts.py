@@ -44,8 +44,14 @@ LETTERS = {
     Lang.EN: string.ascii_lowercase,
 }
 SYMBOL_GROUP_LENGTH = (3, 6)
-PUNCTUATION = ".,:;!?-'\""
-SPECIAL_CHARS = "()[]{}<>@#$%^&*_+=/\\|~"
+PUNCTUATION = {
+    Lang.RU: ".,:;!?-\"",
+    Lang.EN: ".,:;!?-'\"",
+}
+SPECIAL_CHARS = {
+    Lang.RU: "()%*_+=/\\№",
+    Lang.EN: "()[]{}<>@#$%^&*_+=/\\|~",
+}
 
 
 def check_access(user, mode, difficulty):
@@ -125,9 +131,9 @@ def symbol_alphabet(lang, difficulty):
     if difficulty >= 3:
         alphabet += string.digits
     if difficulty >= 4:
-        alphabet += PUNCTUATION
+        alphabet += PUNCTUATION[lang]
     if difficulty >= 5:
-        alphabet += SPECIAL_CHARS
+        alphabet += SPECIAL_CHARS[lang]
     return alphabet
 
 

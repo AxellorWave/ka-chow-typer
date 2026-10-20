@@ -4,7 +4,6 @@ import Button from '../../components/Button.jsx'
 import SaveProgressCta from '../auth/SaveProgressCta.jsx'
 import GhostVerdict from '../ghost/GhostVerdict.jsx'
 import LevelUpModal from '../effects/LevelUpModal.jsx'
-import { showAchievementToasts } from '../effects/toastStore.js'
 import { pitstopPath } from '../pitstop/pitstop.js'
 import { formatDuration, formatNumber } from './format.js'
 import { errorsWord, speedSegments, weakChars } from './runAnalysis.js'
@@ -72,7 +71,7 @@ function XpBar({ result }) {
 function LevelCard({ result }) {
   const previous = result.level - (result.levels_gained ?? 0)
   return (
-    <div className={styles.levelCard} role={result.level_up ? 'status' : undefined}>
+    <div className={styles.levelCard}>
       <div className={styles.levelHead}>
         <span className={styles.levelTitle}>{result.level_up ? 'Level up!' : 'Опыт'}</span>
         <span className={styles.levelGain}>+{formatNumber(result.xp_earned)} XP</span>
@@ -194,6 +193,14 @@ function NewAchievements({ items }) {
   )
 }
 
+function saveErrorMessage(error) {
+  const data = error.response?.data
+  if (data?.error === 'validation_error') {
+    return 'Сервер не принял заезд: результат не прошёл проверку. Так бывает, если заезд прервали или текст сменился. Проедьте ещё раз.'
+  }
+  return data?.message ?? 'Сервер не принял результат заезда.'
+}
+
 function SaveStatus({ save }) {
   if (save.isPending) {
     return <p className={styles.status}>Сохраняем результат…</p>
@@ -204,7 +211,7 @@ function SaveStatus({ save }) {
         <p>
           {save.retryable
             ? 'Нет связи с сервером. Заезд сохранён на этом устройстве: отправьте его ещё раз или он уйдёт сам при следующем заходе.'
-            : (save.error.response?.data?.message ?? 'Сервер не принял результат заезда.')}
+            : saveErrorMessage(save.error)}
         </p>
         {save.retryable && (
           <Button variant="accent" onClick={save.retry}>
@@ -246,7 +253,6 @@ export default function ResultScreen({
   useEffect(() => {
     if (!save.data) return undefined
     setLevelUpOpen(Boolean(save.data.level_up))
-    showAchievementToasts(save.data.new_achievements)
     const reward = rewardSound(save.data)
     return playSequence(
       [
@@ -326,7 +332,7 @@ export default function ResultScreen({
             <WeakChars items={weak} />
           </div>
 
-          {renderReport?.(save)}
+          {renderReport?.(payload)}
 
           {againError && (
             <p className={styles.againError} role="alert">

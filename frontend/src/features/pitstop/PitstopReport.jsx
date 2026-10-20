@@ -1,9 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { getKeyStats } from '../../api/stats.js'
-import QueryError from '../../components/QueryError.jsx'
-import Skeleton from '../../components/Skeleton.jsx'
 import { formatKey, formatNumber } from '../stats/format.js'
-import { compareKey } from './pitstop.js'
+import { compareKey, runKeyStats } from './pitstop.js'
 import styles from './PitstopReport.module.css'
 
 const VERDICTS = {
@@ -48,17 +44,8 @@ function ReportRow({ before, after }) {
   )
 }
 
-function Report({ focus }) {
-  const { data, isFetching, isError, refetch } = useQuery({
-    queryKey: ['stats', 'keys'],
-    queryFn: getKeyStats,
-    refetchOnMount: 'always',
-  })
-
-  if (isFetching) return <Skeleton height="160px" />
-  if (isError) return <QueryError onRetry={refetch} title="Не удалось загрузить статистику" />
-
-  const current = new Map(data.keys.map((item) => [item.key, item]))
+function Report({ focus, result }) {
+  const current = runKeyStats(result.text, result.keystrokes)
   return (
     <ul className={styles.rows}>
       {focus.keys.map((item) => (
@@ -68,7 +55,7 @@ function Report({ focus }) {
   )
 }
 
-export default function PitstopReport({ pitstop, saved }) {
+export default function PitstopReport({ pitstop, result }) {
   return (
     <section className={styles.report} aria-labelledby="pitstop-report-title">
       <h2 id="pitstop-report-title" className={styles.title}>
@@ -79,10 +66,11 @@ export default function PitstopReport({ pitstop, saved }) {
           Статистика по клавишам ещё копится, поэтому сравнивать пока нечего. Проедь ещё несколько
           заездов — и пит-стоп покажет, где ты стал быстрее и точнее.
         </p>
-      ) : saved ? (
-        <Report focus={pitstop.focus} />
       ) : (
-        <p className={styles.notice}>Сравнение появится, когда заезд сохранится.</p>
+        <>
+          <p className={styles.hint}>Слева — твоя статистика до пит-стопа, справа — этот заезд.</p>
+          <Report focus={pitstop.focus} result={result} />
+        </>
       )}
     </section>
   )

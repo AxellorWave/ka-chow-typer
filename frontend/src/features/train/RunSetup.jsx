@@ -3,6 +3,7 @@ import Button from '../../components/Button.jsx'
 import { DIFFICULTIES, MODES, difficultyLock, langsForMode, modeLock } from './options.js'
 import { playSound, stopSound } from '../audio/sounds.js'
 import styles from './RunSetup.module.css'
+import { useEnterToStart } from './useEnterToStart.js'
 
 const VOICE_FADE_MS = 300
 
@@ -65,16 +66,7 @@ export default function RunSetup({ user, setup, onChange, onStart, loading, erro
     return () => stopSound('vo-ready', { fadeMs: VOICE_FADE_MS })
   }, [])
 
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (event.key === 'Enter' && !event.repeat && !loading && event.target === document.body) {
-        event.preventDefault()
-        onStart()
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [loading, onStart])
+  useEnterToStart(onStart, loading)
 
   const selectMode = (modeId) => {
     const nextLangs = langsForMode(modeId)
