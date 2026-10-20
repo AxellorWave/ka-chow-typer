@@ -49,10 +49,19 @@ cd frontend && npm install && npm run dev
 
 ## Продакшен (VPS)
 
+Образы `backend` и `web` собирает GitHub Actions (`.github/workflows/docker.yml`) на каждый push в `main` и публикует в GHCR: `ghcr.io/axellorwave/ka-chow-typer-backend` и `ghcr.io/axellorwave/ka-chow-typer-web`, теги `latest` и короткий SHA коммита. На PR образы только собираются.
+
+Первый запуск на сервере:
+
 ```bash
+git clone https://github.com/AxellorWave/ka-chow-typer.git && cd ka-chow-typer
 cp .env.example .env
-docker compose -f docker-compose.prod.yml up --build -d
+./scripts/deploy.sh
 ```
+
+Передеплой после мержа в `main`: дождаться зелёного workflow «Docker images» и снова запустить `./scripts/deploy.sh`. Скрипт делает `git pull`, скачивает свежие образы, перезапускает контейнеры, выполняет `flask seed` и чистит старые образы. Данные БД, аватары и сертификаты лежат в volume и переживают передеплой.
+
+Откатиться на конкретный коммит: `export IMAGE_TAG=sha-<7 символов>`, затем `docker compose -f docker-compose.prod.yml pull backend web && docker compose -f docker-compose.prod.yml up -d --no-build`. Собрать на сервере без GHCR: `docker compose -f docker-compose.prod.yml up --build -d`.
 
 В `.env` на сервере обязательно задать `DOMAIN`, `SECRET_KEY`, `JWT_SECRET_KEY`, `FRONTEND_URL`, `CORS_ORIGINS`, ключи VK ID и Yandex ID. Без `FLASK_DEBUG=1` бэкенд не стартует, если `SECRET_KEY` или `JWT_SECRET_KEY` не заданы, короче 32 символов или остались `change-me…` из примера. Сгенерировать: `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Cookie в проде всегда уходят с флагом Secure. Caddy сам выпустит сертификат Let's Encrypt для `DOMAIN`.
 
