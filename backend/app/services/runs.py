@@ -16,7 +16,7 @@ from app.services.tracks import check_track_unlocked, get_track
 
 POINTS_PER_CHAR = 10
 MAX_COMBO_MULTIPLIER = 5
-MAX_BONUS_MULTIPLIER = 1.5
+MAX_BONUS_MULTIPLIER = 2
 
 
 def save_run(user, data):
