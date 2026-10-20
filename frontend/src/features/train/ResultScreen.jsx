@@ -12,6 +12,16 @@ import styles from './ResultScreen.module.css'
 
 const CUP_NAMES = ['', 'бронзу', 'серебро', 'золото']
 
+const GUEST_CTA = {
+  title: 'Сохрани этот заезд — зарегистрируйся',
+  subtitle: 'Результат запишется в профиль сразу после регистрации или входа.',
+}
+
+const EXPIRED_CTA = {
+  title: 'Сессия истекла. Войдите — результат сохранится',
+  subtitle: 'Заезд ждёт на этом устройстве и отправится сразу после входа.',
+}
+
 function XpBar({ result }) {
   const span = Math.max(1, result.next_level_xp - result.level_xp)
   const progress = Math.min(100, ((result.xp - result.level_xp) / span) * 100)
@@ -45,7 +55,7 @@ function SaveStatus({ save }) {
       <div className={styles.saveError} role="alert">
         <p>
           {save.retryable
-            ? 'Не получилось сохранить заезд: нет связи с сервером. Результат никуда не делся.'
+            ? 'Нет связи с сервером. Заезд сохранён на этом устройстве: отправьте его ещё раз или он уйдёт сам при следующем заходе.'
             : (save.error.response?.data?.message ?? 'Сервер не принял результат заезда.')}
         </p>
         {save.retryable && (
@@ -96,6 +106,8 @@ export default function ResultScreen({
   ghost,
   user,
   onAgain,
+  againLoading = false,
+  againError = null,
   onChangeSetup,
   changeLabel = 'Сменить режим',
   againLabel = 'Ещё заезд',
@@ -115,14 +127,19 @@ export default function ResultScreen({
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Enter' && !event.repeat && event.target === document.body) {
+      if (
+        event.key === 'Enter' &&
+        !event.repeat &&
+        !againLoading &&
+        event.target === document.body
+      ) {
         event.preventDefault()
         onAgain()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [onAgain])
+  }, [onAgain, againLoading])
 
   const metrics = [
     { label: 'WPM', value: payload.wpm.toFixed(1), accent: true },
@@ -155,7 +172,11 @@ export default function ResultScreen({
 
       {ghost && <GhostVerdict ghost={ghost} durationMs={payload.duration_ms} />}
 
-      {user ? <SaveStatus save={save} /> : <SaveProgressCta />}
+      {user ? (
+        <SaveStatus save={save} />
+      ) : (
+        <SaveProgressCta {...(save.sessionExpired ? EXPIRED_CTA : GUEST_CTA)} />
+      )}
 
       {renderReport?.(save)}
 
@@ -168,8 +189,16 @@ export default function ResultScreen({
         />
       )}
 
+      {againError && (
+        <p className={styles.againError} role="alert">
+          {againError}
+        </p>
+      )}
+
       <div className={styles.actions}>
-        <Button onClick={onAgain}>{againLabel}</Button>
+        <Button onClick={onAgain} loading={againLoading}>
+          {againLabel}
+        </Button>
         {showPitstop && (
           <Button variant="accent" onClick={() => navigate(pitstopPath(payload.lang))}>
             Пит-стоп

@@ -71,6 +71,15 @@
   flex: 1 1 260px;
 }
 
+.againError {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background: var(--color-error);
+  color: var(--color-surface);
+  font-weight: 600;
+}
+
 .rewards {
   display: flex;
   flex-direction: column;
