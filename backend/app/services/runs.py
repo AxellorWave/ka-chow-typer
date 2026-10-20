@@ -21,6 +21,10 @@ MAX_BONUS_MULTIPLIER = 2
 
 def save_run(user, data):
     db.session.refresh(user, with_for_update=True)
+    saved = find_saved_run(user, data["client_run_id"])
+    if saved is not None:
+        db.session.commit()
+        return saved_run_result(user, saved), False
     if data["daily_date"] is not None:
         validate_daily_run(data)
     elif data["track_id"] is None:
@@ -53,9 +57,13 @@ def save_run(user, data):
     new_achievements = check_achievements(user, run)
     db.session.commit()
 
+    return run_result(run, progress, new_achievements, cups, ghost_beaten), True
+
+
+def run_result(run, progress, new_achievements, cups, ghost_beaten):
     return {
         "run_id": run.id,
-        "xp_earned": xp_earned,
+        "xp_earned": run.xp_earned,
         "xp": progress.xp,
         "level": progress.level,
         "level_up": progress.level_up,
@@ -67,6 +75,22 @@ def save_run(user, data):
         "cups": cups,
         "ghost_beaten": ghost_beaten,
     }
+
+
+def find_saved_run(user, client_run_id):
+    if client_run_id is None:
+        return None
+    return db.session.scalar(
+        select(Run).where(Run.user_id == user.id, Run.client_run_id == client_run_id)
+    )
+
+
+def saved_run_result(user, run):
+    cups = None
+    if run.track_id is not None:
+        record = db.session.get(UserTrack, (user.id, run.track_id))
+        cups = {"track_id": run.track_id, "cups": record.cups if record else 0, "new_cups": 0}
+    return run_result(run, add_xp(user.xp, 0), [], cups, False)
 
 
 def validate_references(user, data):
