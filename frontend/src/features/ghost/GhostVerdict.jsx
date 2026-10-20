@@ -1,9 +1,11 @@
 import styles from './GhostVerdict.module.css'
 
-const seconds = (ms) => (Math.abs(ms) / 1000).toFixed(1).replace('.', ',')
+const TENTH_MS = 100
+
+const seconds = (tenths) => (Math.abs(tenths) / 10).toFixed(1).replace('.', ',')
 
 export default function GhostVerdict({ ghost, durationMs }) {
-  const gap = ghost.duration_ms - durationMs
+  const gap = Math.round((ghost.duration_ms - durationMs) / TENTH_MS)
   const self = ghost.who === 'self'
 
   if (gap > 0) {

@@ -1,12 +1,9 @@
 import { useEffect } from 'react'
 import Button from '../../components/Button.jsx'
-import GhostPicker from '../ghost/GhostPicker.jsx'
 import { DIFFICULTIES, MODES, difficultyLock, langsForMode, modeLock } from './options.js'
 import styles from './RunSetup.module.css'
 
-const WORDS_GHOST_HINT = 'Призрак ездит по трассам карьеры и заезду дня, а слова каждый раз новые.'
-
-export default function RunSetup({ user, setup, ghost, onChange, onStart, loading, error }) {
+export default function RunSetup({ user, setup, onChange, onStart, loading, error }) {
   const langs = langsForMode(setup.mode)
 
   useEffect(() => {
@@ -107,14 +104,6 @@ export default function RunSetup({ user, setup, ghost, onChange, onStart, loadin
           </div>
         </fieldset>
       </div>
-
-      {user && (
-        <GhostPicker
-          value={ghost}
-          onChange={(value) => onChange({ ghost: value })}
-          disabledHint={setup.mode === 'words' ? WORDS_GHOST_HINT : null}
-        />
-      )}
 
       {error && (
         <p className={styles.error} role="alert">
