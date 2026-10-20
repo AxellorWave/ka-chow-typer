@@ -41,7 +41,7 @@ export const MODES = [
   },
 ]
 
-export const GUEST_MODES = ['words', 'sentences']
+export const GUEST_MODES = ['words']
 export const GUEST_MAX_DIFFICULTY = 2
 
 export const NATURAL_LANGS = [

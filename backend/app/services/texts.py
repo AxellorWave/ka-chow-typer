@@ -9,6 +9,8 @@ from app.models import Text
 from app.models.enums import Lang, Mode
 from app.services.leveling import MODE_UNLOCK_LEVELS, is_mode_unlocked, max_difficulty
 
+GUEST_LEVEL = 1
+
 NATURAL_LANGS = (Lang.RU, Lang.EN)
 CODE_LANGS = (Lang.PYTHON, Lang.JS, Lang.HTML_CSS)
 
@@ -34,8 +36,6 @@ LENGTH_LIMITS = {
     Mode.SYMBOLS: (20, 100),
 }
 
-GUEST_MODES = (Mode.WORDS, Mode.SENTENCES)
-
 WORD_MIN_LENGTH = 2
 WORD_MAX_LENGTH = 10
 
@@ -49,15 +49,14 @@ SPECIAL_CHARS = "()[]{}<>@#$%^&*_+=/\\|~"
 
 
 def check_access(user, mode, difficulty):
-    if user is None:
-        if mode not in GUEST_MODES:
+    level = GUEST_LEVEL if user is None else user.level
+    if not is_mode_unlocked(mode, level):
+        if user is None:
             raise ApiError(403, "mode_locked", "Войдите, чтобы открыть этот режим")
-        return
-    if not is_mode_unlocked(mode, user.level):
         raise ApiError(
             403, "mode_locked", f"Режим откроется на {MODE_UNLOCK_LEVELS[mode]} уровне"
         )
-    if difficulty > max_difficulty(user.level):
+    if difficulty > max_difficulty(level):
         raise ApiError(403, "difficulty_locked", "Эта сложность пока закрыта")
 
 
