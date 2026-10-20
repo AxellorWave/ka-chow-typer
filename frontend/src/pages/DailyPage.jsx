@@ -10,9 +10,11 @@ import DailyTextCard from '../features/daily/DailyTextCard.jsx'
 import { formatDailyDate } from '../features/daily/format.js'
 import { useDaily, useDailyLeaderboard } from '../features/daily/useDaily.js'
 import { useRideDaily } from '../features/daily/useRideDaily.js'
+import GhostPicker from '../features/ghost/GhostPicker.jsx'
 import LeaderboardTable from '../features/leaderboard/LeaderboardTable.jsx'
 import MyPositionBar from '../features/leaderboard/MyPositionBar.jsx'
 import { METRICS } from '../features/leaderboard/metrics.js'
+import { useTrainSetup } from '../features/train/useTrainSetup.js'
 import { useAuthStore } from '../store/authStore.js'
 import styles from './DailyPage.module.css'
 
@@ -53,6 +55,8 @@ export default function DailyPage() {
   const queryClient = useQueryClient()
   const { data, isPending, isError, refetch } = useDaily()
   const ride = useRideDaily(data?.date)
+  const ghost = useTrainSetup((state) => state.ghost)
+  const updateSetup = useTrainSetup((state) => state.update)
 
   const startNewDay = useCallback(
     () => queryClient.invalidateQueries({ queryKey: ['daily'] }),
@@ -75,7 +79,11 @@ export default function DailyPage() {
       </header>
 
       <div className={styles.grid}>
-        <DailyTextCard text={data.text} onRide={ride} />
+        <DailyTextCard text={data.text} onRide={ride}>
+          {user && (
+            <GhostPicker value={ghost} onChange={(value) => updateSetup({ ghost: value })} />
+          )}
+        </DailyTextCard>
         <DailyStats daily={data} stacked />
       </div>
 
