@@ -1,4 +1,5 @@
 import random
+from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
@@ -7,13 +8,15 @@ from app.errors import ApiError
 from app.extensions import db
 from app.models import DailyChallenge, Run, Text, User
 from app.models.enums import Lang, Mode
-from app.services.clock import msk_day_end, msk_today
+from app.schemas.runs import MAX_DURATION_MS
+from app.services.clock import msk_day_end, msk_now, msk_today
 
 DAILY_TEXT_MODE = "daily"
 DAILY_MODE = Mode.SENTENCES
 DAILY_LANG = Lang.RU
 DAILY_DIFFICULTY = 2
 SENTENCES_PER_DAY = 3
+LATE_FINISH_WINDOW = timedelta(milliseconds=MAX_DURATION_MS)
 
 
 def compose_text(day):
@@ -107,9 +110,13 @@ def daily_payload(user=None):
     }
 
 
+def is_daily_open(day):
+    return day <= msk_today() and msk_now() < msk_day_end(day) + LATE_FINISH_WINDOW
+
+
 def validate_daily_run(data):
     day = data["daily_date"]
-    if day != msk_today():
+    if not is_daily_open(day):
         raise ApiError(400, "daily_closed", "Этот заезд дня уже закончился")
     challenge = get_challenge(day, create=False)
     if challenge is None:

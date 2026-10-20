@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { getPitstop } from '../api/pitstop.js'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
@@ -143,6 +143,7 @@ function TrackTrain({ user, trackId }) {
 
 function DailyRun({ user, daily }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const setup = useMemo(() => ({ dailyDate: daily.date }), [daily.date])
   const loadText = useMemo(() => async () => daily.text, [daily.text])
   const flow = useRunFlow(setup, loadText)
@@ -157,6 +158,11 @@ function DailyRun({ user, daily }) {
   }, [start])
 
   const toDaily = () => navigate('/daily')
+  const again = () => {
+    if (Date.now() < Date.parse(daily.ends_at)) return flow.start()
+    queryClient.invalidateQueries({ queryKey: ['daily'] })
+    toDaily()
+  }
 
   if (flow.phase === 'run' && flow.run) {
     return (
@@ -177,7 +183,7 @@ function DailyRun({ user, daily }) {
         payload={flow.result}
         ghost={flow.ghost}
         user={user}
-        onAgain={flow.start}
+        onAgain={again}
         againLoading={flow.loading}
         againError={flow.error}
         onChangeSetup={toDaily}
