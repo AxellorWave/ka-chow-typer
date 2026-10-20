@@ -1,6 +1,6 @@
 from flask import Flask
 
-from app.config import Config
+from app.config import Config, check_production_config
 from app.errors import register_error_handlers
 from app.extensions import cors, db, jwt, migrate
 
@@ -8,6 +8,8 @@ from app.extensions import cors, db, jwt, migrate
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    if not app.debug and not app.testing:
+        check_production_config(app.config)
     app.json.ensure_ascii = False
 
     db.init_app(app)

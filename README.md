@@ -41,7 +41,8 @@ docker compose exec frontend npm run format
 
 ```bash
 cd backend && python -m venv .venv && . .venv/bin/activate && pip install -r requirements.txt
-flask --app wsgi run --debug
+export FLASK_DEBUG=1 JWT_COOKIE_SECURE=false
+flask --app wsgi run
 
 cd frontend && npm install && npm run dev
 ```
@@ -53,7 +54,7 @@ cp .env.example .env
 docker compose -f docker-compose.prod.yml up --build -d
 ```
 
-В `.env` на сервере обязательно задать `DOMAIN`, `SECRET_KEY`, `JWT_SECRET_KEY`, `JWT_COOKIE_SECURE=true`, `FRONTEND_URL`, `CORS_ORIGINS`, ключи VK ID и Yandex ID. Caddy сам выпустит сертификат Let's Encrypt для `DOMAIN`.
+В `.env` на сервере обязательно задать `DOMAIN`, `SECRET_KEY`, `JWT_SECRET_KEY`, `FRONTEND_URL`, `CORS_ORIGINS`, ключи VK ID и Yandex ID. Без `FLASK_DEBUG=1` бэкенд не стартует, если `SECRET_KEY` или `JWT_SECRET_KEY` не заданы, короче 32 символов или остались `change-me…` из примера. Сгенерировать: `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Cookie в проде всегда уходят с флагом Secure. Caddy сам выпустит сертификат Let's Encrypt для `DOMAIN`.
 
 ## Структура
 

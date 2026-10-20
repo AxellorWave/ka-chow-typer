@@ -6,19 +6,36 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+DEV_SECRET_KEY = "dev-secret-key-change-me-in-production-0000"
+DEV_JWT_SECRET_KEY = "dev-jwt-secret-key-change-me-in-production-00"
+MIN_SECRET_LENGTH = 32
+
+
+def split_origins(value):
+    return [origin.strip() for origin in value.split(",") if origin.strip()]
+
+
+def check_production_config(config):
+    for name, dev_value in (("SECRET_KEY", DEV_SECRET_KEY), ("JWT_SECRET_KEY", DEV_JWT_SECRET_KEY)):
+        value = config.get(name) or ""
+        if value == dev_value or value.startswith("change-me") or len(value) < MIN_SECRET_LENGTH:
+            raise RuntimeError(
+                f"{name} не задан или небезопасен: нужна случайная строка от {MIN_SECRET_LENGTH} символов"
+            )
+
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me-in-production-0000")
+    SECRET_KEY = os.getenv("SECRET_KEY", DEV_SECRET_KEY)
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", "postgresql+psycopg://kachow:kachow@localhost:5432/kachow"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret-key-change-me-in-production-00")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", DEV_JWT_SECRET_KEY)
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     JWT_TOKEN_LOCATION = ["headers", "cookies"]
-    JWT_COOKIE_SECURE = os.getenv("JWT_COOKIE_SECURE", "false").lower() == "true"
+    JWT_COOKIE_SECURE = os.getenv("JWT_COOKIE_SECURE", "true").lower() != "false"
     JWT_COOKIE_SAMESITE = "Lax"
     JWT_COOKIE_CSRF_PROTECT = False
     JWT_REFRESH_COOKIE_PATH = "/api/auth"
@@ -28,7 +45,7 @@ class Config:
     MAX_AVATAR_BYTES = 512 * 1024
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024
 
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+    CORS_ORIGINS = split_origins(os.getenv("CORS_ORIGINS", "http://localhost:5173"))
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
     VK_CLIENT_ID = os.getenv("VK_CLIENT_ID", "")
