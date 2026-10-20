@@ -25,6 +25,7 @@ function FreeTrain({ user }) {
   const storedSetup = useTrainSetup()
   const setup = normalizeSetup(storedSetup, user)
   const flow = useRunFlow(setup)
+  const ghostWho = user && setup.mode !== 'words' ? storedSetup.ghost : 'off'
 
   if (flow.phase === 'run' && flow.run) {
     return (
@@ -33,6 +34,7 @@ function FreeTrain({ user }) {
         run={flow.run}
         onFinish={flow.finish}
         onExit={flow.backToSetup}
+        ghostWho={ghostWho}
       />
     )
   }
@@ -41,6 +43,7 @@ function FreeTrain({ user }) {
     return (
       <ResultScreen
         payload={flow.result}
+        ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
         onChangeSetup={flow.backToSetup}
@@ -52,6 +55,7 @@ function FreeTrain({ user }) {
     <RunSetup
       user={user}
       setup={setup}
+      ghost={storedSetup.ghost}
       onChange={storedSetup.update}
       onStart={flow.start}
       loading={flow.loading}
@@ -64,6 +68,8 @@ function TrackRun({ user, track }) {
   const navigate = useNavigate()
   const setup = useMemo(() => trackSetup(track), [track])
   const flow = useRunFlow(setup)
+  const ghostWho = useTrainSetup((state) => state.ghost)
+  const updateSetup = useTrainSetup((state) => state.update)
 
   if (flow.phase === 'run' && flow.run) {
     return (
@@ -73,6 +79,7 @@ function TrackRun({ user, track }) {
         onFinish={flow.finish}
         onExit={flow.backToSetup}
         exitLabel="К трассе"
+        ghostWho={ghostWho}
       />
     )
   }
@@ -81,6 +88,7 @@ function TrackRun({ user, track }) {
     return (
       <ResultScreen
         payload={flow.result}
+        ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
         onChangeSetup={() => navigate('/career')}
@@ -89,7 +97,16 @@ function TrackRun({ user, track }) {
     )
   }
 
-  return <TrackStart track={track} onStart={flow.start} loading={flow.loading} error={flow.error} />
+  return (
+    <TrackStart
+      track={track}
+      ghost={ghostWho}
+      onGhostChange={(ghost) => updateSetup({ ghost })}
+      onStart={flow.start}
+      loading={flow.loading}
+      error={flow.error}
+    />
+  )
 }
 
 const toMap = (
@@ -146,6 +163,7 @@ function DailyRun({ user, daily }) {
         onFinish={flow.finish}
         onExit={toDaily}
         exitLabel="К заезду дня"
+        ghostWho="self"
       />
     )
   }
@@ -154,6 +172,7 @@ function DailyRun({ user, daily }) {
     return (
       <ResultScreen
         payload={flow.result}
+        ghost={flow.ghost}
         user={user}
         onAgain={flow.start}
         onChangeSetup={toDaily}

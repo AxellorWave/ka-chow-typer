@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../components/Button.jsx'
+import GhostPicker from '../ghost/GhostPicker.jsx'
 import CupRequirements from './CupRequirements.jsx'
 import { trackMeta } from './tracks.js'
 import styles from './TrackStart.module.css'
 
-export default function TrackStart({ track, onStart, loading, error }) {
+export default function TrackStart({ track, ghost, onGhostChange, onStart, loading, error }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Enter' && !event.repeat && !loading && event.target === document.body) {
@@ -39,6 +40,8 @@ export default function TrackStart({ track, onStart, loading, error }) {
           <p className={styles.best}>Твой лучший результат: {track.best_wpm.toFixed(1)} WPM</p>
         )}
       </div>
+
+      <GhostPicker value={ghost} onChange={onGhostChange} />
 
       {error && (
         <p className={styles.error} role="alert">
