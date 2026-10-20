@@ -7,6 +7,7 @@ class GarageUpdateSchema(Schema):
     class Meta:
         unknown = RAISE
 
+    hero = fields.String(error_messages=CODE_ERRORS)
     color = fields.String(error_messages=CODE_ERRORS)
     decal = fields.String(error_messages=CODE_ERRORS)
     wheels = fields.String(error_messages=CODE_ERRORS)

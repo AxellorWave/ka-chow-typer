@@ -1,14 +1,10 @@
 .keyboard {
-  --key-unit: clamp(32px, 4.6vw, 52px);
+  --key-unit: clamp(24px, min(4.6vw, 5.2vh), 52px);
   --key-gap: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--key-gap);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
   user-select: none;
 }
 
@@ -24,6 +20,7 @@
   justify-content: center;
   width: calc(var(--key-unit) * var(--key-width) + var(--key-gap) * (var(--key-width) - 1));
   height: var(--key-unit);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-key);
   color: var(--color-text);
@@ -86,7 +83,7 @@
 @keyframes flashOk {
   from {
     background: var(--color-success);
-    color: var(--color-surface);
+    color: var(--color-paper);
     transform: translateY(2px);
   }
 }
@@ -95,7 +92,7 @@
   0%,
   60% {
     background: var(--color-error);
-    color: var(--color-surface);
+    color: var(--color-paper);
     transform: translateY(2px);
   }
 }

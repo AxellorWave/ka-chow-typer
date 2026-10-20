@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import CarBadge from '../../components/CarBadge.jsx'
+import RacerAvatar from '../../components/car/RacerAvatar.jsx'
 import styles from './MyPositionBar.module.css'
 
 export default function MyPositionBar({ user, me, metric, total }) {
@@ -34,7 +34,7 @@ export default function MyPositionBar({ user, me, metric, total }) {
         {me.position}
         <span className={styles.total}> из {total}</span>
       </span>
-      <CarBadge config={me.car_config} width={56} />
+      <RacerAvatar racer={me} className={styles.car} />
       <span className={styles.nickname}>{me.nickname}</span>
       <span className={styles.value}>
         {metric.format(me.value)}

@@ -11,7 +11,7 @@
 }
 
 .hand {
-  width: clamp(80px, 9vw, 120px);
+  width: clamp(56px, min(9vw, 11vh), 120px);
   height: auto;
 }
 

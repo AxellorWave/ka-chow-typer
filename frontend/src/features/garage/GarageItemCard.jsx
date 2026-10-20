@@ -1,4 +1,4 @@
-import CarBadge from '../../components/CarBadge.jsx'
+import CarModel from '../../components/car/CarModel.jsx'
 import styles from './GarageItemCard.module.css'
 
 export default function GarageItemCard({ item, preview, selected, saved, onSelect }) {
@@ -14,7 +14,7 @@ export default function GarageItemCard({ item, preview, selected, saved, onSelec
       disabled={!item.unlocked}
       onClick={() => onSelect(item.code)}
     >
-      <CarBadge config={preview} width={96} />
+      <CarModel config={preview} className={styles.car} />
       <span className={styles.title}>{item.title}</span>
       {item.unlocked ? (
         saved && <span className={styles.badge}>Стоит сейчас</span>

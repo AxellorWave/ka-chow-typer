@@ -1,0 +1,11 @@
+.avatar {
+  flex-shrink: 0;
+}
+
+.avatar.photo {
+  height: auto;
+  aspect-ratio: 1;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+}

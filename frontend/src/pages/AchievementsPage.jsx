@@ -58,7 +58,7 @@ export default function AchievementsPage() {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.heading}>
-          <h1 className={styles.title}>Достижения</h1>
+          <h1 className={styles.title}>Наклейки на капот</h1>
           {data && (
             <p className={styles.summary}>
               Открыто {unlockedCount} из {data.length}

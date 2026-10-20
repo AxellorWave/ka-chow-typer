@@ -3,8 +3,59 @@ import Button from '../../components/Button.jsx'
 import { DIFFICULTIES, MODES, difficultyLock, langsForMode, modeLock } from './options.js'
 import styles from './RunSetup.module.css'
 
+function modeAccess(mode, user) {
+  if (!modeLock(mode, user)) return 'открыт'
+  return user ? `ур. ${mode.unlockLevel}` : 'вход'
+}
+
+function Spec({ label, value }) {
+  return (
+    <div className={styles.spec}>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </div>
+  )
+}
+
+function ModeCard({ mode, index, user, active, onSelect }) {
+  const lock = modeLock(mode, user)
+  const classNames = [styles.mode, active && styles.active, lock && styles.locked]
+    .filter(Boolean)
+    .join(' ')
+  return (
+    <button
+      type="button"
+      className={classNames}
+      aria-pressed={active}
+      disabled={Boolean(lock)}
+      title={lock ?? undefined}
+      onClick={() => onSelect(mode.id)}
+    >
+      {active && <span className={styles.tag}>Выбрано</span>}
+      <span className={styles.modeTop}>
+        <span className={styles.modeNumber}>{String(index + 1).padStart(2, '0')}</span>
+        <span className={styles.glyph} aria-hidden="true">
+          {mode.glyph}
+        </span>
+      </span>
+      <span className={styles.modeLabel}>{mode.label}</span>
+      <span className={styles.modeHint}>{mode.description}</span>
+      <dl className={styles.specs}>
+        <Spec label="Длина" value={mode.length} />
+        <Spec label="Доступ" value={modeAccess(mode, user)} />
+      </dl>
+      {lock && (
+        <span className={styles.stamp}>Закрыто · {user ? `ур. ${mode.unlockLevel}` : 'вход'}</span>
+      )}
+    </button>
+  )
+}
+
 export default function RunSetup({ user, setup, onChange, onStart, loading, error }) {
   const langs = langsForMode(setup.mode)
+  const mode = MODES.find((item) => item.id === setup.mode) ?? MODES[0]
+  const lang = langs.find((item) => item.id === setup.lang) ?? langs[0]
+  const difficulty = DIFFICULTIES.find((item) => item.id === setup.difficulty) ?? DIFFICULTIES[0]
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -17,46 +68,34 @@ export default function RunSetup({ user, setup, onChange, onStart, loading, erro
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [loading, onStart])
 
-  const selectMode = (mode) => {
-    const nextLangs = langsForMode(mode)
-    const lang = nextLangs.some((item) => item.id === setup.lang) ? setup.lang : nextLangs[0].id
-    onChange({ mode, lang })
+  const selectMode = (modeId) => {
+    const nextLangs = langsForMode(modeId)
+    const nextLang = nextLangs.some((item) => item.id === setup.lang) ? setup.lang : nextLangs[0].id
+    onChange({ mode: modeId, lang: nextLang })
   }
 
   return (
     <section className={styles.setup} aria-labelledby="setup-title">
       <header className={styles.header}>
         <h1 id="setup-title" className={styles.title}>
-          Выбери заезд
+          Выбор заезда
         </h1>
-        <p className={styles.subtitle}>Режим, язык и трасса. Чем сложнее — тем больше опыта.</p>
+        <span className={styles.step}>Техкарта · шаг 1</span>
       </header>
 
-      <fieldset className={styles.group}>
-        <legend className={styles.legend}>Режим</legend>
+      <fieldset className={styles.modesGroup}>
+        <legend className={styles.srOnly}>Режим</legend>
         <div className={styles.modes}>
-          {MODES.map((mode) => {
-            const lock = modeLock(mode, user)
-            const active = setup.mode === mode.id
-            return (
-              <button
-                key={mode.id}
-                type="button"
-                className={[styles.mode, active && styles.active, lock && styles.locked]
-                  .filter(Boolean)
-                  .join(' ')}
-                aria-pressed={active}
-                disabled={Boolean(lock)}
-                onClick={() => selectMode(mode.id)}
-              >
-                <span className={styles.modeLabel}>
-                  {lock && <span aria-hidden="true">🔒 </span>}
-                  {mode.label}
-                </span>
-                <span className={styles.modeHint}>{lock ?? mode.description}</span>
-              </button>
-            )
-          })}
+          {MODES.map((item, index) => (
+            <ModeCard
+              key={item.id}
+              mode={item}
+              index={index}
+              user={user}
+              active={setup.mode === item.id}
+              onSelect={selectMode}
+            />
+          ))}
         </div>
       </fieldset>
 
@@ -64,41 +103,44 @@ export default function RunSetup({ user, setup, onChange, onStart, loading, erro
         <fieldset className={styles.group}>
           <legend className={styles.legend}>Язык</legend>
           <div className={styles.segmented}>
-            {langs.map((lang) => (
+            {langs.map((item) => (
               <button
-                key={lang.id}
+                key={item.id}
                 type="button"
-                className={setup.lang === lang.id ? `${styles.pill} ${styles.active}` : styles.pill}
-                aria-pressed={setup.lang === lang.id}
-                onClick={() => onChange({ lang: lang.id })}
+                className={
+                  setup.lang === item.id ? `${styles.square} ${styles.squareActive}` : styles.square
+                }
+                aria-pressed={setup.lang === item.id}
+                onClick={() => onChange({ lang: item.id })}
               >
-                {lang.label}
+                {item.label}
               </button>
             ))}
           </div>
         </fieldset>
 
         <fieldset className={styles.group}>
-          <legend className={styles.legend}>Трасса</legend>
-          <div className={styles.segmented}>
-            {DIFFICULTIES.map((difficulty) => {
-              const lock = difficultyLock(difficulty, user)
-              const active = setup.difficulty === difficulty.id
+          <legend className={styles.legend}>
+            Сложность · {difficulty.id} · {difficulty.label}
+          </legend>
+          <div className={styles.bars}>
+            {DIFFICULTIES.map((item) => {
+              const lock = difficultyLock(item, user)
+              const filled = item.id <= setup.difficulty
               return (
                 <button
-                  key={difficulty.id}
+                  key={item.id}
                   type="button"
-                  className={[styles.pill, active && styles.active, lock && styles.locked]
+                  className={[styles.bar, filled && styles.barFilled, lock && styles.barLocked]
                     .filter(Boolean)
                     .join(' ')}
-                  aria-pressed={active}
+                  style={{ '--bar': item.id }}
+                  aria-pressed={setup.difficulty === item.id}
+                  aria-label={`Сложность ${item.id}: ${item.label}${lock ? `, ${lock.toLowerCase()}` : ''}`}
                   disabled={Boolean(lock)}
-                  title={lock ?? undefined}
-                  onClick={() => onChange({ difficulty: difficulty.id })}
-                >
-                  {lock && <span aria-hidden="true">🔒 </span>}
-                  {difficulty.id}. {difficulty.label}
-                </button>
+                  title={lock ?? item.label}
+                  onClick={() => onChange({ difficulty: item.id })}
+                />
               )
             })}
           </div>
@@ -112,10 +154,12 @@ export default function RunSetup({ user, setup, onChange, onStart, loading, erro
       )}
 
       <div className={styles.start}>
-        <Button onClick={onStart} loading={loading}>
+        <Button className={styles.startButton} onClick={onStart} loading={loading}>
           На старт!
         </Button>
-        <span className={styles.hint}>или нажми Enter</span>
+        <span className={styles.summary}>
+          {mode.label} · {lang.label} · сложность {difficulty.id} — или нажми <kbd>Enter</kbd>
+        </span>
       </div>
     </section>
   )

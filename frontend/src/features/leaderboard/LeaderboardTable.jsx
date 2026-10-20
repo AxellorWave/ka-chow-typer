@@ -1,5 +1,5 @@
-import CarBadge from '../../components/CarBadge.jsx'
-import { MEDALS } from './metrics.js'
+import RacerAvatar from '../../components/car/RacerAvatar.jsx'
+import { PLACE_CUPS } from './cups.js'
 import styles from './LeaderboardTable.module.css'
 
 const PODIUM_CLASSES = { 1: styles.gold, 2: styles.silver, 3: styles.bronze }
@@ -25,8 +25,18 @@ export default function LeaderboardTable({ items, metric, currentUserId, dimmed 
             .join(' ')
           return (
             <li key={row.user_id} className={classNames}>
-              <span className={styles.position}>{MEDALS[row.position] ?? row.position}</span>
-              <CarBadge config={row.car_config} />
+              <span className={styles.position}>
+                {PLACE_CUPS[row.position] ? (
+                  <img
+                    src={PLACE_CUPS[row.position]}
+                    alt={`${row.position} место`}
+                    className={styles.cup}
+                  />
+                ) : (
+                  row.position
+                )}
+              </span>
+              <RacerAvatar racer={row} className={styles.car} />
               <span className={styles.player}>
                 <span className={styles.nickname}>{row.nickname}</span>
                 <span className={styles.level}>Ур. {row.level}</span>

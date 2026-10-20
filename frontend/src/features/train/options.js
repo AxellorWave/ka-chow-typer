@@ -1,22 +1,57 @@
 export const MODES = [
-  { id: 'words', label: 'Слова', description: 'Случайные слова из словаря', unlockLevel: 1 },
-  { id: 'sentences', label: 'Предложения', description: 'Связный текст', unlockLevel: 3 },
-  { id: 'quotes', label: 'Цитаты', description: 'Фразы героев «Тачек»', unlockLevel: 3 },
-  { id: 'symbols', label: 'Символы', description: 'Буквы, цифры и спецзнаки', unlockLevel: 5 },
-  { id: 'code', label: 'Код', description: 'Python, JavaScript, HTML/CSS', unlockLevel: 7 },
+  {
+    id: 'words',
+    label: 'Слова',
+    glyph: 'аб',
+    description: 'Частотные слова, 5 уровней сложности',
+    length: '25 слов',
+    unlockLevel: 1,
+  },
+  {
+    id: 'sentences',
+    label: 'Предложения',
+    glyph: 'Аа.',
+    description: 'Связный текст с пунктуацией и заглавными',
+    length: '3 предл.',
+    unlockLevel: 3,
+  },
+  {
+    id: 'quotes',
+    label: 'Цитаты',
+    glyph: '«»',
+    description: 'Фразы героев «Тачек», длинные и с тире',
+    length: '1 цитата',
+    unlockLevel: 3,
+  },
+  {
+    id: 'code',
+    label: 'Код',
+    glyph: '{ }',
+    description: 'Python, JavaScript, HTML/CSS с отступами',
+    length: '1 фрагмент',
+    unlockLevel: 7,
+  },
+  {
+    id: 'symbols',
+    label: 'Символы',
+    glyph: '#%',
+    description: 'Цифры, знаки и спецсимволы на скорость',
+    length: '20 групп',
+    unlockLevel: 5,
+  },
 ]
 
 export const GUEST_MODES = ['words', 'sentences']
 export const GUEST_MAX_DIFFICULTY = 2
 
 export const NATURAL_LANGS = [
-  { id: 'ru', label: 'Русский' },
-  { id: 'en', label: 'English' },
+  { id: 'ru', label: 'RU' },
+  { id: 'en', label: 'EN' },
 ]
 
 export const CODE_LANGS = [
   { id: 'python', label: 'Python' },
-  { id: 'js', label: 'JavaScript' },
+  { id: 'js', label: 'JS' },
   { id: 'html_css', label: 'HTML/CSS' },
 ]
 

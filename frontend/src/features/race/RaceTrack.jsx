@@ -1,6 +1,24 @@
 import RaceCar from './RaceCar.jsx'
 import styles from './RaceTrack.module.css'
 
+const RIBBON = ['KACHOWTYPER', 'ПЕЧАТЬ ГЕРОЯ', '№95', 'КИБЕРРЫВОК']
+
+function Ribbon() {
+  const items = [...RIBBON, ...RIBBON, ...RIBBON]
+  return (
+    <div className={styles.sky} aria-hidden="true">
+      <div className={styles.ribbon}>
+        {items.map((item, index) => (
+          <span key={index} className={styles.ribbonItem}>
+            <span className={styles.ribbonLabel}>{item}</span>
+            <span className={styles.ribbonStar}>★</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const clamp = (value) => Math.min(1, Math.max(0, value || 0))
 
 function Lane({ car }) {
@@ -19,7 +37,7 @@ function Lane({ car }) {
             key={car.skid ?? 0}
             className={car.skid ? `${styles.car} ${styles.skid}` : styles.car}
           >
-            <RaceCar config={car.config} number={car.number} combo={car.combo} />
+            <RaceCar config={car.config} combo={car.combo} />
           </div>
           {car.label && <span className={styles.label}>{car.label}</span>}
         </div>
@@ -37,12 +55,15 @@ export default function RaceTrack({ cars, moving = false, finished = false }) {
       role="img"
       aria-label={`Трек: ${cars.map((car) => `${car.label ?? 'машинка'} ${Math.round(clamp(car.progress) * 100)}%`).join(', ')}`}
     >
-      <div className={styles.start} />
-      <div className={styles.finish} />
-      {cars.map((car) => (
-        <Lane key={car.id} car={car} />
-      ))}
-      {finished && <span className={styles.kachow}>Ka-chow!</span>}
+      <Ribbon />
+      <div className={styles.road}>
+        <div className={styles.start} />
+        <div className={styles.finish} />
+        {cars.map((car) => (
+          <Lane key={car.id} car={car} />
+        ))}
+        {finished && <span className={styles.kachow}>Ka-chow!</span>}
+      </div>
     </div>
   )
 }

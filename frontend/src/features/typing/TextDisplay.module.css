@@ -4,8 +4,8 @@
   height: calc(var(--line-height) * var(--lines));
   overflow: hidden;
   padding: 0 var(--space-1);
-  font-family: var(--font-body);
-  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-family: var(--font-mono);
+  font-size: clamp(1rem, min(2.2vw, 3.6vh), 1.6rem);
   line-height: var(--line-height);
   white-space: pre-wrap;
   overflow-wrap: break-word;
@@ -15,17 +15,17 @@
 
 .code {
   font-family: var(--font-mono);
-  font-size: clamp(1.05rem, 2vw, 1.4rem);
+  font-size: clamp(0.95rem, min(2vw, 3.2vh), 1.4rem);
   tab-size: 4;
 }
 
 .correct {
-  color: var(--color-text);
+  color: var(--color-success);
 }
 
 .pending {
   color: var(--color-text-muted);
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .wordCurrent {
@@ -39,13 +39,13 @@
 }
 
 .modeChars .current {
-  background: var(--color-cursor);
-  box-shadow: 0 3px 0 var(--color-accent-dark);
+  background: color-mix(in srgb, var(--color-cursor) 30%, transparent);
+  box-shadow: 0 4px 0 var(--color-cursor);
 }
 
 .modeWords .wordCurrent {
-  background: var(--color-accent);
-  box-shadow: 0 0 0 2px var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
 .modeWords .current {
@@ -55,7 +55,9 @@
 
 .modeChars .error,
 .modeWords .error {
-  background: var(--color-error);
+  background: var(--color-error-bg);
   box-shadow: none;
-  color: var(--color-surface);
+  color: var(--color-error);
+  text-decoration: underline wavy var(--color-error);
+  text-underline-offset: 6px;
 }

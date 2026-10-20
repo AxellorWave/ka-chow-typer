@@ -1,29 +1,30 @@
 .car {
-  display: block;
+  position: relative;
   width: 100%;
-  height: auto;
-  overflow: visible;
 }
 
-.number {
-  font-family: var(--font-display);
-  font-size: 6px;
-  fill: var(--color-surface);
-  text-anchor: middle;
-}
-
-.wheel {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: spin var(--wheel-speed, 0s) linear infinite;
-  animation-play-state: var(--wheel-state, paused);
+.body {
+  position: relative;
+  z-index: 1;
+  max-height: calc(var(--car-width) * 0.62);
 }
 
 .flame {
+  position: absolute;
+  top: 48%;
+  right: 96%;
+  width: 45%;
   opacity: 0;
-  transform-box: fill-box;
   transform-origin: right center;
   transition: opacity 0.2s ease;
+}
+
+.flameOuter {
+  fill: var(--flame-outer);
+}
+
+.flameCore {
+  fill: var(--flame-core);
 }
 
 .car[data-combo='3'] .flame,
@@ -35,31 +36,16 @@
   animation: flicker 0.15s ease-in-out infinite alternate;
 }
 
-.flameOuter {
-  fill: var(--flame-outer);
-}
-
-.flameCore {
-  fill: var(--flame-core);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes flicker {
   from {
-    transform: scaleX(1.3);
+    transform: scaleX(1);
   }
   to {
-    transform: scaleX(1.8);
+    transform: scaleX(1.35);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wheel,
   .car[data-combo='5'] .flame {
     animation: none;
   }

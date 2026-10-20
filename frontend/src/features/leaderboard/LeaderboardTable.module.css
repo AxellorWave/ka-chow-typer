@@ -1,7 +1,12 @@
 .board {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-hud);
+  box-shadow: var(--shadow-card);
+  color: var(--color-paper);
   transition: opacity 0.15s ease;
 }
 
@@ -12,7 +17,6 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -23,44 +27,52 @@
   grid-template-columns: 3.5rem 3.5rem minmax(0, 1fr) 6rem 7rem;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.list .row:last-child {
+  border-bottom: none;
 }
 
 .head {
-  padding-block: 0;
-  background: transparent;
-  box-shadow: none;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  color: var(--color-hud-label);
 }
 
-.gold {
-  background: var(--color-gold);
+.gold .position {
+  color: var(--color-accent);
 }
 
-.silver {
-  background: var(--color-silver);
+.silver .position {
+  color: var(--color-chrome);
 }
 
-.bronze {
-  background: var(--color-bronze);
+.bronze .position {
+  color: var(--color-accent-dark);
 }
 
 .mine {
-  outline: 3px solid var(--color-primary);
-  outline-offset: -3px;
+  margin: var(--space-1) 0;
+  border-bottom: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent);
+  color: var(--color-ink);
 }
 
 .position {
-  font-size: 1.25rem;
-  font-weight: 800;
-  text-align: center;
+  font-family: var(--font-arcade);
+  font-size: 0.875rem;
+  color: var(--color-hud-label);
+}
+
+.mine .position {
+  color: var(--color-ink);
 }
 
 .player {
@@ -71,51 +83,61 @@
 
 .nickname {
   overflow: hidden;
-  font-weight: 700;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .level {
-  font-size: 0.8125rem;
-  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  opacity: 0.7;
 }
 
 .secondary {
-  color: var(--color-text-muted);
   text-align: right;
+  opacity: 0.85;
 }
 
 .value {
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-family: var(--font-arcade);
+  font-size: 1rem;
   text-align: right;
+  color: var(--color-hud-text);
+}
+
+.mine .value {
+  color: var(--color-ink);
 }
 
 .head .value,
 .head .secondary {
-  font-size: inherit;
-  font-weight: inherit;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--color-hud-label);
 }
 
 @media (max-width: 640px) {
   .row {
-    grid-template-columns: 2.25rem 2.75rem minmax(0, 1fr) auto;
+    grid-template-columns: 2.5rem 3rem minmax(0, 1fr) 4.5rem;
     gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
   }
 
   .secondary {
     display: none;
   }
 
-  .position,
   .value {
-    font-size: 1.0625rem;
+    font-size: 0.8125rem;
   }
 }
 
-.row > svg {
-  width: 100%;
-  height: auto;
+.car {
+  width: 52px;
+  max-height: 32px;
+}
+
+.cup {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }

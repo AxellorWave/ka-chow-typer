@@ -5,15 +5,20 @@
 }
 
 .label {
-  font-weight: 600;
-  font-size: 0.875rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
 .input {
   width: 100%;
+  min-height: 48px;
   padding: var(--space-3);
-  border: 2px solid var(--color-text-muted);
-  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
@@ -21,12 +26,18 @@
 
 .input:focus {
   outline: none;
-  border-color: var(--color-accent-dark);
-  box-shadow: 0 0 0 3px var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-dark);
+}
+
+.input:disabled {
+  border-style: dashed;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
 }
 
 .inputInvalid {
   border-color: var(--color-error);
+  box-shadow: 3px 3px 0 var(--color-error);
 }
 
 .error {

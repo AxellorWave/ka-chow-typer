@@ -1,5 +1,6 @@
 export const DEFAULT_CAR_CONFIG = {
-  color: 'color_red',
+  hero: 'hero_mcqueen',
+  color: 'color_native',
   decal: 'decal_bolt',
   wheels: 'wheels_stock',
   spoiler: 'spoiler_none',

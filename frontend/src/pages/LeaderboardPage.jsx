@@ -5,6 +5,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import QueryError from '../components/QueryError.jsx'
 import SegmentedControl from '../components/SegmentedControl.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import LeaderboardPodium from '../features/leaderboard/LeaderboardPodium.jsx'
 import LeaderboardTable from '../features/leaderboard/LeaderboardTable.jsx'
 import MyPositionBar from '../features/leaderboard/MyPositionBar.jsx'
 import { METRICS, PERIODS } from '../features/leaderboard/metrics.js'
@@ -49,28 +50,29 @@ export default function LeaderboardPage() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Лидеры</h1>
-        <p className={styles.subtitle}>
-          Лучшие гонщики Радиатор-Спрингс
-          {data?.total ? ` · всего ${formatNumber(data.total)}` : ''}
-        </p>
+        <div>
+          <h1 className={styles.title}>Табло лидеров</h1>
+          <p className={styles.subtitle}>
+            Лучшие гонщики Радиатор-Спрингс
+            {data?.total ? ` · всего ${formatNumber(data.total)}` : ''}
+          </p>
+        </div>
+        <div className={styles.filters}>
+          <SegmentedControl
+            label="Рейтинг"
+            size="lg"
+            options={METRIC_OPTIONS}
+            value={metricKey}
+            onChange={(value) => updateParam('metric', value)}
+          />
+          <SegmentedControl
+            label="Период"
+            options={PERIOD_OPTIONS}
+            value={period}
+            onChange={(value) => updateParam('period', value)}
+          />
+        </div>
       </header>
-
-      <div className={styles.filters}>
-        <SegmentedControl
-          label="Рейтинг"
-          size="lg"
-          options={METRIC_OPTIONS}
-          value={metricKey}
-          onChange={(value) => updateParam('metric', value)}
-        />
-        <SegmentedControl
-          label="Период"
-          options={PERIOD_OPTIONS}
-          value={period}
-          onChange={(value) => updateParam('period', value)}
-        />
-      </div>
 
       {metric.hint && <p className={styles.hint}>{metric.hint}</p>}
 
@@ -98,8 +100,12 @@ export default function LeaderboardPage() {
       )}
 
       {data && data.items.length > 0 && (
+        <LeaderboardPodium items={data.items} metric={shownMetric} currentUserId={user?.id} />
+      )}
+
+      {data && data.items.length > 3 && (
         <LeaderboardTable
-          items={data.items}
+          items={data.items.slice(3)}
           metric={shownMetric}
           currentUserId={user?.id}
           dimmed={isPlaceholderData}
