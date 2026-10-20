@@ -38,6 +38,7 @@ export default function LeaderboardPage() {
   })
 
   const shownMetric = METRICS[data?.metric] ?? metric
+  const rows = isError ? null : data
 
   const updateParam = (name, value) => {
     setSearchParams((current) => {
@@ -54,7 +55,7 @@ export default function LeaderboardPage() {
           <h1 className={styles.title}>Табло лидеров</h1>
           <p className={styles.subtitle}>
             Лучшие гонщики Радиатор-Спрингс
-            {data?.total ? ` · всего ${formatNumber(data.total)}` : ''}
+            {rows?.total ? ` · всего ${formatNumber(rows.total)}` : ''}
           </p>
         </div>
         <div className={styles.filters}>
@@ -84,9 +85,9 @@ export default function LeaderboardPage() {
         </div>
       )}
 
-      {isError && !data && <QueryError onRetry={refetch} />}
+      {isError && <QueryError onRetry={refetch} />}
 
-      {data && data.items.length === 0 && (
+      {rows && rows.items.length === 0 && (
         <EmptyState
           icon="🏆"
           title="Пока никого — стань первым"
@@ -99,20 +100,20 @@ export default function LeaderboardPage() {
         />
       )}
 
-      {data && data.items.length > 0 && (
-        <LeaderboardPodium items={data.items} metric={shownMetric} currentUserId={user?.id} />
+      {rows && rows.items.length > 0 && (
+        <LeaderboardPodium items={rows.items} metric={shownMetric} currentUserId={user?.id} />
       )}
 
-      {data && data.items.length > 3 && (
+      {rows && rows.items.length > 3 && (
         <LeaderboardTable
-          items={data.items.slice(3)}
+          items={rows.items.slice(3)}
           metric={shownMetric}
           currentUserId={user?.id}
           dimmed={isPlaceholderData}
         />
       )}
 
-      {data && <MyPositionBar user={user} me={data.me} metric={shownMetric} total={data.total} />}
+      {rows && <MyPositionBar user={user} me={rows.me} metric={shownMetric} total={rows.total} />}
     </div>
   )
 }

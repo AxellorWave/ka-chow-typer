@@ -27,11 +27,13 @@ export function useAuthForm({ initialValues, validate, submit }) {
 
   const handleSubmit = (event) => {
     event.preventDefault()
-    const errors = validate(values)
+    const prepared =
+      typeof values.nickname === 'string' ? { ...values, nickname: values.nickname.trim() } : values
+    const errors = validate(prepared)
     setFieldErrors(errors)
     setFormError(null)
     if (Object.keys(errors).length === 0) {
-      mutation.mutate(values)
+      mutation.mutate(prepared)
     }
   }
 

@@ -1,4 +1,3 @@
-
 import { memo, useRef } from 'react'
 import { useStore } from 'zustand'
 import { FINGERS, LAYOUTS, LAYOUT_TITLES, resolveChar } from './layouts.js'
@@ -10,7 +9,9 @@ const Key = memo(function Key({ code, finger, width, caption, hint, target, heat
     styles.key,
     heat === undefined ? styles[FINGERS[finger].type] : styles.heatKey,
     target ? styles.target : null,
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div
@@ -72,6 +73,11 @@ function TypingKeyboard({ engine, layout }) {
   )
 }
 
+const heatColor = (value) =>
+  value < 0.5
+    ? `color-mix(in oklab, var(--heat-low), var(--heat-mid) ${Math.round(value * 200)}%)`
+    : `color-mix(in oklab, var(--heat-mid), var(--heat-high) ${Math.round(value * 200 - 100)}%)`
+
 function HeatmapKeyboard({ layout, heatmap = {}, metric = 'errors' }) {
   return (
     <div
@@ -84,23 +90,17 @@ function HeatmapKeyboard({ layout, heatmap = {}, metric = 'errors' }) {
           {row.map((key) => {
             const stat = heatmap[key.code]
             const value = metric === 'errors' ? stat?.error_rate : stat?.avg_latency_ms
-            const normalized = Math.min(1, Math.max(0, (value ?? 0) / (metric === 'errors' ? 30 : 600)))
-            const heat = stat
-              ? `hsl(${120 - normalized * 120} 75% 42%)`
-              : 'var(--color-surface)'
+            const normalized = Math.min(
+              1,
+              Math.max(0, (value ?? 0) / (metric === 'errors' ? 30 : 600)),
+            )
+            const heat = stat ? heatColor(normalized) : 'var(--color-surface)'
 
             const tooltip = stat
               ? `${key.caption}: ${stat.error_rate}% ошибок, ${stat.avg_latency_ms} мс, ${stat.presses} нажатий`
               : `${key.caption}: нет данных`
 
-            return (
-              <Key
-                key={key.code}
-                {...key}
-                heat={heat}
-                tooltip={tooltip}
-              />
-            )
+            return <Key key={key.code} {...key} heat={heat} tooltip={tooltip} />
           })}
         </div>
       ))}
@@ -108,7 +108,13 @@ function HeatmapKeyboard({ layout, heatmap = {}, metric = 'errors' }) {
   )
 }
 
-export default function VirtualKeyboard({ engine, layout = 'ru', mode = 'typing', heatmap, metric }) {
+export default function VirtualKeyboard({
+  engine,
+  layout = 'ru',
+  mode = 'typing',
+  heatmap,
+  metric,
+}) {
   if (mode === 'heatmap') {
     return <HeatmapKeyboard layout={layout} heatmap={heatmap} metric={metric} />
   }

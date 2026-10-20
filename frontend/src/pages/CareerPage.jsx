@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import EmptyState from '../components/EmptyState.jsx'
 import PageLoader from '../components/PageLoader.jsx'
 import QueryError from '../components/QueryError.jsx'
 import Skeleton from '../components/Skeleton.jsx'
@@ -55,7 +56,15 @@ export default function CareerPage() {
 
       {isError && <QueryError onRetry={refetch} title="Не удалось загрузить трассы" />}
 
-      {data && <TrackMap items={data.items} onSelect={selectTrack} />}
+      {data && data.items.length === 0 && (
+        <EmptyState
+          icon="🛣️"
+          title="Трассы ещё строятся"
+          description="Карьера пока пустая. Загляните позже или прокатитесь в свободном заезде."
+        />
+      )}
+
+      {data && data.items.length > 0 && <TrackMap items={data.items} onSelect={selectTrack} />}
     </div>
   )
 }
