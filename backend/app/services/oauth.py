@@ -6,12 +6,13 @@ from dataclasses import dataclass
 from urllib.parse import urlencode
 
 from flask import current_app, redirect, request
-from flask_jwt_extended import create_refresh_token, set_refresh_cookies
+from flask_jwt_extended import set_refresh_cookies
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 from sqlalchemy import select
 
 from app.extensions import db
 from app.models import OAuthAccount, User
+from app.security import issue_refresh_token
 
 STATE_COOKIE = "kachow_oauth_state"
 STATE_MAX_AGE = 600
@@ -87,7 +88,7 @@ def frontend_redirect(error=None, user=None):
     response = redirect(url)
     response.delete_cookie(STATE_COOKIE, path=_cookie_path())
     if user is not None:
-        set_refresh_cookies(response, create_refresh_token(identity=user))
+        set_refresh_cookies(response, issue_refresh_token(user))
     return response
 
 

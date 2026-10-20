@@ -41,6 +41,10 @@ class Config:
     JWT_REFRESH_COOKIE_PATH = "/api/auth"
     JWT_REFRESH_COOKIE_NAME = "kachow_refresh"
 
+    RATELIMIT_ENABLED = os.getenv("RATELIMIT_ENABLED", "true").lower() != "false"
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "memory://")
+    RATELIMIT_HEADERS_ENABLED = True
+
     UPLOAD_DIR = os.getenv("UPLOAD_DIR", str(Path(__file__).resolve().parent.parent / "uploads"))
     MAX_AVATAR_BYTES = 512 * 1024
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024

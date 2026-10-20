@@ -11,6 +11,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.errors import ApiError
 from app.extensions import db
 from app.models import User
+from app.security import revoke_user_refresh_tokens
 from app.services.clock import msk_now
 
 AVATAR_URL_PREFIX = "/api/uploads/avatars/"
@@ -106,5 +107,6 @@ def change_password(user, current_password, new_password):
         )
     user.password_hash = generate_password_hash(new_password)
     user.password_changed_at = msk_now()
+    revoke_user_refresh_tokens(user)
     db.session.commit()
     return user

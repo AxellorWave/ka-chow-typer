@@ -8,6 +8,11 @@ info:
     **Авторизация.** Access-токен живёт 30 минут и передаётся в заголовке `Authorization: Bearer <token>`.
     Refresh-токен живёт 30 дней и лежит в httpOnly cookie `kachow_refresh` с путём `/api/auth`, браузер отправляет его сам.
     Когда приходит `401 token_expired`, нужно вызвать `POST /api/auth/refresh` и повторить запрос.
+    Refresh-токен одноразовый: `refresh` выдаёт новый, старый работает ещё 30 секунд. После `logout` refresh-токен отзывается.
+
+    **Лимиты.** Регистрация — 20 в час с IP, вход — 30 в минуту с IP и 10 в минуту на email, `refresh` — 30 в минуту с IP,
+    заезды — 20 в минуту и 300 в час на пользователя, аватар — 10 в минуту, смена пароля — 10 в час.
+    При превышении приходит `429 too_many_requests` с заголовком `Retry-After`.
 
     **Время.** Дни, периоды лидербордов и стрик считаются по московскому времени.
 
@@ -113,11 +118,14 @@ paths:
     post:
       tags: [Авторизация]
       summary: Новый access-токен по refresh-cookie
+      description: Ставит новую cookie `kachow_refresh`, старая перестаёт работать через 30 секунд.
       security:
         - refreshCookie: []
       responses:
         '200':
           description: Новый токен и пользователь
+          headers:
+            Set-Cookie: {$ref: '#/components/headers/RefreshCookie'}
           content:
             application/json:
               schema: {$ref: '#/components/schemas/AuthResponse'}
@@ -126,7 +134,7 @@ paths:
   /api/auth/logout:
     post:
       tags: [Авторизация]
-      summary: Выход, cookie удаляется
+      summary: Выход, refresh-токен отзывается, cookie удаляется
       security: []
       responses:
         '200':
@@ -692,7 +700,7 @@ components:
             message: Проверьте введённые данные
             fields: {password: [От 8 до 128 символов]}
     Unauthorized:
-      description: '`unauthorized` (нет токена), `invalid_token`, `token_expired` (пора делать refresh) или `token_revoked` (пароль сменён, нужно войти заново)'
+      description: '`unauthorized` (нет токена), `invalid_token`, `token_expired` (пора делать refresh) или `token_revoked` (выход или смена пароля, нужно войти заново)'
       content:
         application/json:
           schema: {$ref: '#/components/schemas/Error'}
