@@ -1,0 +1,13 @@
+.verdict {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-silver);
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+.win {
+  background: var(--color-gold);
+  color: var(--color-text);
+}
