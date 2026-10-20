@@ -6,6 +6,7 @@ import { useSettingsStore } from '../../store/settingsStore.js'
 import TextDisplay from '../typing/TextDisplay.jsx'
 import { useTypingEngine } from '../typing/useTypingEngine.js'
 import { useGhost } from '../ghost/useGhost.js'
+import KeyboardPanel from '../keyboard/KeyboardPanel.jsx'
 import Hud from './Hud.jsx'
 import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
@@ -258,6 +259,8 @@ export default function RunScreen({
           </button>
         )}
       </div>
+
+      <KeyboardPanel engine={engine} lang={run.lang} />
 
       <footer className={styles.footer}>
         <span>
