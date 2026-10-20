@@ -60,6 +60,7 @@ class RunCreateSchema(Schema):
     text_id = fields.Integer(load_default=None, strict=True, error_messages=INTEGER_ERRORS)
     track_id = fields.Integer(load_default=None, strict=True, error_messages=INTEGER_ERRORS)
     daily_date = fields.Date(load_default=None, error_messages={"invalid": "Ожидается дата"})
+    ghost_run_id = fields.Integer(load_default=None, strict=True, error_messages=INTEGER_ERRORS)
     text = fields.String(
         required=True,
         error_messages={**REQUIRED, "invalid": "Ожидается строка"},

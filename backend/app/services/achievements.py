@@ -70,7 +70,7 @@ RUN_CHECKS = {
 USER_CHECKS = {
     "level": lambda user, condition: user.level,
     "streak": lambda user, condition: max(user.streak_best, user.streak_current),
-    "ghost_beaten": lambda user, condition: 0,
+    "ghost_beaten": lambda user, condition: user.ghosts_beaten,
 }
 
 
