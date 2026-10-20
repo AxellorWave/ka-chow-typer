@@ -24,6 +24,9 @@ class User(TimestampMixin, db.Model):
     streak_best: Mapped[int] = mapped_column(
         Integer, default=0, server_default=text("0"), nullable=False
     )
+    ghosts_beaten: Mapped[int] = mapped_column(
+        Integer, default=0, server_default=text("0"), nullable=False
+    )
     last_active_date: Mapped[date | None] = mapped_column(Date)
     car_config: Mapped[dict] = mapped_column(
         JSONB, default=dict, server_default=text("'{}'::jsonb"), nullable=False
