@@ -9,4 +9,5 @@ marshmallow==4.3.1
 psycopg[binary]==3.3.6
 gunicorn==26.2.0
 requests==2.34.2
+Pillow==12.3.0
 python-dotenv==1.2.4

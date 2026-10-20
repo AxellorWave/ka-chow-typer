@@ -1,7 +1,9 @@
 import secrets
+from io import BytesIO
 from pathlib import Path
 
 from flask import current_app
+from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -12,10 +14,9 @@ from app.models import User
 from app.services.clock import msk_now
 
 AVATAR_URL_PREFIX = "/api/uploads/avatars/"
-IMAGE_SIGNATURES = (
-    (b"\x89PNG\r\n\x1a\n", "png"),
-    (b"\xff\xd8\xff", "jpg"),
-)
+AVATAR_SIZE = 512
+AVATAR_MAX_PIXELS = 40_000_000
+AVATAR_FORMATS = ("PNG", "JPEG", "WEBP")
 
 
 def avatars_dir():
@@ -24,13 +25,23 @@ def avatars_dir():
     return path
 
 
-def detect_image(data):
-    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
-        return "webp"
-    for signature, extension in IMAGE_SIGNATURES:
-        if data.startswith(signature):
-            return extension
-    return None
+def _unsupported_image():
+    return ApiError(415, "unsupported_image", "Подойдёт фото в формате PNG, JPEG или WebP")
+
+
+def reencode_avatar(data):
+    try:
+        with Image.open(BytesIO(data), formats=AVATAR_FORMATS) as image:
+            if image.width * image.height > AVATAR_MAX_PIXELS:
+                raise _unsupported_image()
+            image = ImageOps.exif_transpose(image)
+            image = image.convert("RGBA" if image.mode in ("RGBA", "LA", "P") else "RGB")
+            image.thumbnail((AVATAR_SIZE, AVATAR_SIZE))
+            output = BytesIO()
+            image.save(output, "WEBP", quality=85)
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError):
+        raise _unsupported_image()
+    return output.getvalue()
 
 
 def _remove_stored_avatar(url):
@@ -58,13 +69,11 @@ def save_avatar(user, file):
     data = file.read(limit + 1)
     if len(data) > limit:
         raise ApiError(413, "file_too_large", f"Фото должно быть не больше {limit // 1024} КБ")
-    extension = detect_image(data)
-    if extension is None:
-        raise ApiError(415, "unsupported_image", "Подойдёт фото в формате PNG, JPEG или WebP")
+    avatar = reencode_avatar(data)
 
-    name = f"{user.id}-{secrets.token_hex(8)}.{extension}"
+    name = f"{user.id}-{secrets.token_hex(8)}.webp"
     path = avatars_dir() / name
-    path.write_bytes(data)
+    path.write_bytes(avatar)
     previous = user.avatar_url
     user.avatar_url = AVATAR_URL_PREFIX + name
     try:

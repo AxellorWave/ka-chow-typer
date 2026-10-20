@@ -9,4 +9,6 @@ AVATAR_MAX_AGE = 365 * 24 * 60 * 60
 
 @uploads_bp.get("/avatars/<path:name>")
 def get_avatar(name):
-    return send_from_directory(avatars_dir(), name, max_age=AVATAR_MAX_AGE)
+    response = send_from_directory(avatars_dir(), name, max_age=AVATAR_MAX_AGE)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
