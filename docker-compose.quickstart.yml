@@ -1,0 +1,49 @@
+name: kachowtyper
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kachow
+      POSTGRES_PASSWORD: kachow
+      POSTGRES_DB: kachow
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kachow -d kachow"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    image: ghcr.io/axellorwave/ka-chow-typer-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: ["sh", "-c", "flask seed && exec gunicorn -w 2 -b 0.0.0.0:5000 wsgi:app"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://kachow:kachow@db:5432/kachow
+      FLASK_APP: wsgi
+      SECRET_KEY: ${SECRET_KEY:-quickstart-local-only-secret-key-not-for-production}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-quickstart-local-only-jwt-key-not-for-production}
+      JWT_COOKIE_SECURE: "false"
+      FRONTEND_URL: http://localhost:8080
+      CORS_ORIGINS: http://localhost:8080
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: ghcr.io/axellorwave/ka-chow-typer-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      DOMAIN: ":80"
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  uploads:
