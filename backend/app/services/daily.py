@@ -10,6 +10,7 @@ from app.models import DailyChallenge, Run, Text, User
 from app.models.enums import Lang, Mode
 from app.schemas.runs import MAX_DURATION_MS
 from app.services.clock import msk_day_end, msk_now, msk_today
+from app.services.ranking import ranked_run
 
 DAILY_TEXT_MODE = "daily"
 DAILY_MODE = Mode.SENTENCES
@@ -68,7 +69,7 @@ def _leader(day):
     row = db.session.execute(
         select(User.nickname, Run.wpm)
         .join(User, User.id == Run.user_id)
-        .where(Run.daily_date == day)
+        .where(Run.daily_date == day, ranked_run())
         .order_by(Run.wpm.desc(), Run.created_at.asc())
         .limit(1)
     ).first()
@@ -81,7 +82,7 @@ def _my_results(day, user):
     )
     best = db.session.execute(
         select(Run.wpm, Run.accuracy)
-        .where(Run.daily_date == day, Run.user_id == user.id)
+        .where(Run.daily_date == day, Run.user_id == user.id, ranked_run())
         .order_by(Run.wpm.desc(), Run.created_at.asc())
         .limit(1)
     ).first()
