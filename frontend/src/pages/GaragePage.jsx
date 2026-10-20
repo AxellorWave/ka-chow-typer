@@ -3,6 +3,7 @@ import Button from '../components/Button.jsx'
 import QueryError from '../components/QueryError.jsx'
 import SegmentedControl from '../components/SegmentedControl.jsx'
 import Skeleton from '../components/Skeleton.jsx'
+import { playSound } from '../features/audio/sounds.js'
 import { useToastStore } from '../features/effects/toastStore.js'
 import CarPreview from '../features/garage/CarPreview.jsx'
 import GarageItemCard from '../features/garage/GarageItemCard.jsx'
@@ -37,6 +38,7 @@ export default function GaragePage() {
 
   const select = (code) => {
     save.reset()
+    if (draft[slot] !== code) playSound('sfx-garage-wrench')
     setChanges((previous) => ({ ...previous, [slot]: code }))
   }
 

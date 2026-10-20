@@ -12,7 +12,29 @@ import cupBronze from '../../assets/design/cups/cup-bronze.png'
 import cupGold from '../../assets/design/cups/cup-gold.png'
 import cupSilver from '../../assets/design/cups/cup-silver.png'
 import { useSaveRun } from './useSaveRun.js'
+import { playSequence, playSound } from '../audio/sounds.js'
 import styles from './ResultScreen.module.css'
+
+const KA_CHOW_CODE = 'ka_chow'
+const PHOTO_FINISH_MS = 500
+const COIN_DELAY_MS = 600
+const CUP_DELAY_MS = 1200
+const REWARD_DELAY_MS = 1900
+
+function verdictSound(ghost, durationMs) {
+  if (!ghost) return 'sfx-crowd-cheer'
+  const gap = ghost.duration_ms - durationMs
+  if (Math.abs(gap) < PHOTO_FINISH_MS) return 'sfx-photo-finish'
+  return gap > 0 ? 'sfx-place-1' : 'sfx-place-last'
+}
+
+function rewardSound(result) {
+  const achievements = result.new_achievements ?? []
+  if (result.level_up) return 'sfx-level-up'
+  if (achievements.some((item) => item.code === KA_CHOW_CODE)) return 'sfx-horn'
+  if (achievements.length > 0) return 'sfx-achievement'
+  return null
+}
 
 const CUPS = [
   { id: 1, name: 'Бронза', className: 'bronze', image: cupBronze },
@@ -212,12 +234,27 @@ export default function ResultScreen({
   const navigate = useNavigate()
   const save = useSaveRun(payload, Boolean(user))
   const [levelUpOpen, setLevelUpOpen] = useState(false)
-  const closeLevelUp = useCallback(() => setLevelUpOpen(false), [])
+  const closeLevelUp = useCallback(() => {
+    playSound('sfx-modal-close')
+    setLevelUpOpen(false)
+  }, [])
 
   useEffect(() => {
-    if (!save.data) return
+    playSound(verdictSound(ghost, payload.duration_ms))
+  }, [ghost, payload.duration_ms])
+
+  useEffect(() => {
+    if (!save.data) return undefined
     setLevelUpOpen(Boolean(save.data.level_up))
     showAchievementToasts(save.data.new_achievements)
+    const reward = rewardSound(save.data)
+    return playSequence(
+      [
+        save.data.xp_earned > 0 && ['sfx-coin', COIN_DELAY_MS],
+        save.data.cups?.new_cups > 0 && ['sfx-cup', CUP_DELAY_MS],
+        reward && [reward, REWARD_DELAY_MS],
+      ].filter(Boolean),
+    )
   }, [save.data])
 
   useEffect(() => {

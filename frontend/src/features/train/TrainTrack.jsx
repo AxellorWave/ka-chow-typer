@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useStore } from 'zustand'
 import { useAuthStore } from '../../store/authStore.js'
 import { comboMultiplier } from '../game/scoring.js'
@@ -6,6 +7,7 @@ import ComboBurst from '../effects/ComboBurst.jsx'
 import SparkCanvas from '../effects/SparkCanvas.jsx'
 import RaceTrack from '../race/RaceTrack.jsx'
 import { useTypingMetrics } from '../typing/useTypingMetrics.js'
+import { playSound } from '../audio/sounds.js'
 import styles from './TrainTrack.module.css'
 
 const SPEED_TIERS = [
@@ -13,6 +15,8 @@ const SPEED_TIERS = [
   { below: 70, speed: 'fast' },
   { below: Infinity, speed: 'turbo' },
 ]
+
+const LEAD_THRESHOLD = 0.01
 
 const speedFor = (wpm) => SPEED_TIERS.find((tier) => wpm < tier.below).speed
 
@@ -28,11 +32,23 @@ export default function TrainTrack({ engine, tracker, finished, ghost }) {
 
   const moving = started && !paused && !finished
   const total = engine.text.length
+  const playerProgress = total > 0 ? position / total : 0
+  const gap = ghost && moving ? playerProgress - ghostProgress : 0
+  const lead = gap > LEAD_THRESHOLD ? 1 : gap < -LEAD_THRESHOLD ? -1 : 0
+  const leadRef = useRef(0)
+
+  useEffect(() => {
+    if (lead === 0) return
+    if (leadRef.current !== 0 && lead !== leadRef.current) {
+      playSound(lead > 0 ? 'sfx-overtake' : 'sfx-pass-by')
+    }
+    leadRef.current = lead
+  }, [lead])
 
   const cars = [
     {
       id: 'player',
-      progress: total > 0 ? position / total : 0,
+      progress: playerProgress,
       config: user?.car_config,
       label: user?.nickname ?? 'Ты',
       speed: moving ? speedFor(wpm) : 'idle',

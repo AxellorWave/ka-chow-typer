@@ -14,18 +14,21 @@ import PauseDialog from './PauseDialog.jsx'
 import TrainTrack from './TrainTrack.jsx'
 import styles from './RunScreen.module.css'
 import {
-  playTireSound,
-  playNitroSound,
   startEngineSound,
   updateEngineSound,
   stopEngineSound,
   closeAudioContext,
 } from '../audio/audioEngine.js'
+import { pauseSound, playSound, preloadSounds, resumeSound, stopSound } from '../audio/sounds.js'
 
 const COUNTDOWN_FROM = 3
 const COUNTDOWN_STEP_MS = 700
 const GO_LABEL = 'Ka-chow!'
 const FINISH_DELAY_MS = 900
+const MUSIC = 'music-race-loop'
+const MUSIC_FADE_MS = 500
+const VOICE_OFFSETS = { 3: 0, 2: 1.04, 1: 2.12, 0: 3.22 }
+const DANGER_STREAK = 3
 
 function useCountdown(active, round, onDone) {
   const [count, setCount] = useState(COUNTDOWN_FROM)
@@ -105,6 +108,7 @@ export default function RunScreen({
   const bonusActive = bonusSeconds > 0
 
   const finishTimerRef = useRef(null)
+  const errorStreakRef = useRef(0)
   const ghost = useGhost(run, ghostWho)
 
   const finish = useCallback(
@@ -137,25 +141,18 @@ export default function RunScreen({
   const engine = useTypingEngine(run.text, {
     enabled: phase === 'running' && !menuOpen,
     onCorrect: () => {
-      const previousCombo = tracker.store.getState().combo
-
       tracker.hit(bonusActive ? TURBO_BONUS.multiplier : 1)
-
-      const currentCombo = tracker.store.getState().combo
+      errorStreakRef.current = 0
+      playSound('sfx-key')
 
       if (useSettingsStore.getState().soundEnabled) {
         startEngineSound()
-
-        if (previousCombo < 100 && currentCombo >= 100) {
-          playNitroSound()
-        }
       }
     },
     onError: () => {
       tracker.miss()
-      if (useSettingsStore.getState().soundEnabled) {
-        playTireSound()
-      }
+      errorStreakRef.current += 1
+      playSound(errorStreakRef.current === DANGER_STREAK ? 'sfx-danger' : 'sfx-error')
       const node = boardRef.current
       if (node) {
         node.classList.remove(styles.shake)
@@ -175,10 +172,41 @@ export default function RunScreen({
   }, [paused])
 
   useEffect(() => {
+    preloadSounds()
     return () => {
+      stopSound(MUSIC)
       void closeAudioContext()
     }
   }, [])
+
+  useEffect(() => {
+    if (phase === 'running') {
+      playSound(MUSIC)
+    } else if (phase === 'finished') {
+      stopSound(MUSIC, { fadeMs: MUSIC_FADE_MS })
+      playSound('sfx-finish')
+    } else {
+      stopSound(MUSIC)
+    }
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'running') return
+    if (paused || !soundEnabled) pauseSound(MUSIC)
+    else resumeSound(MUSIC)
+  }, [phase, paused, soundEnabled])
+
+  useEffect(() => {
+    if (started) playSound('sfx-engine-rev')
+  }, [started])
+
+  useEffect(() => {
+    if (phase === 'running' && started && paused) playSound('sfx-tire-screech')
+  }, [phase, started, paused])
+
+  useEffect(() => {
+    if (bonusActive) playSound('sfx-bonus-pickup')
+  }, [bonusActive])
 
   useEffect(() => {
     if (phase !== 'running' || paused || !soundEnabled) {
@@ -220,7 +248,17 @@ export default function RunScreen({
     return () => clearInterval(timer)
   }, [phase, started, paused, bonusSeconds])
 
-  const count = useCountdown(phase === 'countdown' && !menuOpen, round, () => setPhase('running'))
+  const counting = phase === 'countdown' && !menuOpen
+  const count = useCountdown(counting, round, () => setPhase('running'))
+
+  useEffect(() => {
+    if (!counting || !(count in VOICE_OFFSETS)) return
+    if (count === COUNTDOWN_FROM) {
+      stopSound('vo-ready')
+      playSound('sfx-engine-start')
+    }
+    playSound('vo-countdown-go', { from: VOICE_OFFSETS[count] })
+  }, [counting, count])
 
   const resume = useCallback(
     (now = performance.now()) => {
