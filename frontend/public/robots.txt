@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /$
+Allow: /assets/
+Allow: /favicon
+Allow: /apple-touch-icon.png
+Disallow: /
+
+Sitemap: https://kachowtyper.ru/sitemap.xml
