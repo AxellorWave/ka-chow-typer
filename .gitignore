@@ -15,5 +15,6 @@ node_modules/
 dist/
 
 backend/uploads/
+.cache/
 
 *:Zone.Identifier
