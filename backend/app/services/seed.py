@@ -9,12 +9,17 @@ from app.models import Achievement, GarageItem, Text, Track
 from app.models.enums import GarageSlot, Lang, Mode, UnlockType
 
 SEEDS_DIR = Path(__file__).resolve().parent.parent / "seeds"
+UPSERT_BATCH_SIZE = 5000
 
 TEXT_FILES = (
     "words_ru.json",
     "words_en.json",
     "sentences_ru.json",
     "sentences_en.json",
+    "sentences_ru_tatoeba.json",
+    "sentences_en_tatoeba.json",
+    "sentences_ru_classics.json",
+    "sentences_en_classics.json",
     "quotes_cars.json",
     "code_python.json",
     "code_js.json",
@@ -62,15 +67,16 @@ def load_json(filename):
 
 
 def upsert(model, rows, conflict_columns):
-    if not rows:
-        return 0, 0
-    stmt = insert(model).values(rows)
-    update_columns = {
-        column: stmt.excluded[column] for column in rows[0] if column not in conflict_columns
-    }
-    stmt = stmt.on_conflict_do_update(index_elements=conflict_columns, set_=update_columns)
-    stmt = stmt.returning(literal_column("xmax = 0"))
-    flags = db.session.execute(stmt).scalars().all()
+    flags = []
+    for start in range(0, len(rows), UPSERT_BATCH_SIZE):
+        batch = rows[start : start + UPSERT_BATCH_SIZE]
+        stmt = insert(model).values(batch)
+        update_columns = {
+            column: stmt.excluded[column] for column in batch[0] if column not in conflict_columns
+        }
+        stmt = stmt.on_conflict_do_update(index_elements=conflict_columns, set_=update_columns)
+        stmt = stmt.returning(literal_column("xmax = 0"))
+        flags += db.session.execute(stmt).scalars().all()
     inserted = sum(flags)
     return inserted, len(flags) - inserted
 
